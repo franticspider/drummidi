@@ -379,14 +379,14 @@ void  process_voice(uint16_t *samplecnt,  const unsigned char *SAMPLE, uint16_t 
 //TODO: we don't need to pass in samplecnt if we decrement the variable when we call this function..
 void process_pitched_voice(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, const unsigned char *SAMPLE, uint16_t *spnt, uint16_t bitshift, int16_t *total) {
 
-  //		if (samplecntBG2) {
-  //      phaccBG2+=samplepitch1;
-  //      if(phaccBG2 & 128){
-  //        phaccBG2 &= 127;
-  //        total+=((pgm_read_byte_near(BG2 + samplepntBG2++)-128)<<bitshift)>>bitshift;
-  //        samplecntBG2--;
-  //      }
-  //		}
+  //  if (samplecntBG2) {
+  //    phaccBG2+=samplepitch1;
+  //    if(phaccBG2 & 128){
+  //      phaccBG2 &= 127;
+  //      total+=((pgm_read_byte_near(BG2 + samplepntBG2++)-128)<<bitshift)>>bitshift;
+  //      samplecntBG2--;
+  //    }
+  //  }
 
   if (*samplecnt) {
     *phacc += pitch;
@@ -399,7 +399,6 @@ void process_pitched_voice(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, c
 }
 
 void process_pitched_voice_masked(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, const unsigned char *SAMPLE, uint16_t *spnt, uint8_t bitmask, int16_t *total) {
-
 
   if (*samplecnt) {
     *phacc += pitch;
@@ -418,14 +417,14 @@ void process_pitched_voice_masked(uint16_t *samplecnt, uint8_t pitch, uint8_t *p
 //TODO: we don't need to pass in samplecnt if we decrement the variable when we call this function..
 void process_pitched_voice2(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, const unsigned char *SAMPLE, uint16_t *spnt, int16_t bitmask, int16_t *total) {
 
-  //		if (samplecntBG2) {
-  //      phaccBG2+=samplepitch1;
-  //      if(phaccBG2 & 128){
-  //        phaccBG2 &= 127;
-  //        total+=((pgm_read_byte_near(BG2 + samplepntBG2++)-128)<<bitshift)>>bitshift;
-  //        samplecntBG2--;
-  //      }
-  //		}
+  //  if (samplecntBG2) {
+  //    phaccBG2+=samplepitch1;
+  //    if(phaccBG2 & 128){
+  //      phaccBG2 &= 127;
+  //      total+=((pgm_read_byte_near(BG2 + samplepntBG2++)-128)<<bitshift)>>bitshift;
+  //      samplecntBG2--;
+  //    }
+  //  }
 
 
   static int16_t grain;
@@ -471,8 +470,9 @@ void loop() {
   uint8_t patlength = pgm_read_byte_near(patlen + patselect);
 
   uint8_t bitshift1 = 0,
-          bitshift2 = 0,
-          bitmask1 = 0xff,
+          bitshift2 = 0;
+
+  uint8_t bitmask1 = 0xff,
           bitmask2 = 0xff;
 
   //Pitch control:
@@ -540,15 +540,16 @@ void loop() {
       if (playing) {
         if (!(tempocnt--)) {
           tempocnt = tempo;
+
           if ((beatCount & 0x02) == 0)
             digitalWriteFast(CLOCK_PIN, HIGH); //Clock out Hi
           else
             digitalWriteFast(CLOCK_PIN, LOW); //Clock out Lo
           beatCount++;
-          
+
           uint8_t trig = pgm_read_byte_near(pattern + (patselect << 4) + stepcnt++);
           PORTC = stepcnt; //Not sure what this does!
-
+ 
           // Uncomment if you want to mask drums...
           //uint8_t mask=(PIND>>2)|((PINB&3)<<6);
           //trig&=mask;
@@ -556,6 +557,7 @@ void loop() {
           if (stepcnt > patlength) stepcnt = 0;
           if (stepcnt == 0) digitalWriteFast(12, HIGH); //Reset out Hi
           if (stepcnt != 0) digitalWriteFast(12, LOW); //Reset out Lo
+
           if (trig & 128) {
             samplepntGU = 0;
             samplecntGU = GU_LEN < samplecutoff1 ? GU_LEN : samplecutoff1;
@@ -591,6 +593,7 @@ void loop() {
         }
       }
     }
+
     //------------------------------------------------------------------------
     // Control pots & switches block -----------------------------------------
     if (!(divider++)) {
