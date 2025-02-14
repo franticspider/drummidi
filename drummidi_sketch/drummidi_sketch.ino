@@ -232,14 +232,14 @@ void setup() {
   //pinMode(17,OUTPUT);
 
 
-  pinMode(A0, INPUT); // pot read
-  pinMode(A1, INPUT); // tempo pot
-  pinMode(A2, INPUT); // pattern select pot
-  pinMode(A3, INPUT); // pattern select pot
-  pinMode(A4, INPUT); // pattern select pot
-  pinMode(A5, INPUT); // pattern select pot
-  pinMode(A6, INPUT); // pattern select pot
-  pinMode(A7, INPUT); // pattern select pot
+  pinMode(A0, INPUT_PULLUP); // pot read
+  pinMode(A1, INPUT_PULLUP); // tempo pot
+  pinMode(A2, INPUT_PULLUP); // pattern select pot
+  pinMode(A3, INPUT_PULLUP); // pattern select pot
+  pinMode(A4, INPUT_PULLUP); // pattern select pot
+  pinMode(A5, INPUT_PULLUP); // pattern select pot
+  //pinMode(A6, INPUT_PULLUP); // pattern select pot
+  //pinMode(A7, INPUT_PULLUP); // pattern select pot
   pinMode(LED_BUILTIN, OUTPUT); //on board LED for
 
   // Set up Timer 1 to send a sample every interrupt.
@@ -308,7 +308,7 @@ void setup() {
   Serial.println("[f] to speed up, [d] to slow down.  [space] to pause.");
   Serial.println("[p] to get current pattern info");
 #endif
-
+  
 #ifdef DOMIDI
 
 
@@ -317,7 +317,7 @@ void setup() {
   MIDI.setHandleNoteOn(handleNoteOn);  // Put only the name of the function
   MIDI.setHandleNoteOff(handleNoteOff);  // Put only the name of the function
   MIDI.setHandleControlChange(handleControlChange);
-
+  
   MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to messages on channel 1
 
   //Serial.begin(115200); // This works with ttymid
