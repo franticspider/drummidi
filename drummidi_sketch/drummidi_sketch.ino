@@ -1,6 +1,5 @@
 // O2 Minipops rhythm box (c) DSP Synthesizers 2016
 // Free for non commercial use
-
 // http://janostman.wordpress.com
 
 
@@ -17,6 +16,8 @@
 #define POT3 A3
 #define POT4 A4
 #define POT5 A5
+
+#define  MINIMUM(LEN,CUTOFF)  ((LEN) < (CUTOFF) ? (LEN) : (CUTOFF))
 
 
 /* HARDWARE FAULT!
@@ -92,16 +93,12 @@ volatile uint16_t SFREQ;
 //-----------------------------------------
 
 ISR(TIMER1_COMPA_vect) {
-
   //-------------------  Ringbuffer handler -------------------------
-
-  if (RingCount) {                            //If entry in FIFO..
-    OCR2A = Ringbuffer[(RingRead++)];          //Output LSB of 16-bit DAC
+  if (RingCount) {                         //If entry in FIFO..
+    OCR2A = Ringbuffer[(RingRead++)];      //Output LSB of 16-bit DAC
     RingCount--;
   }
-
   //-----------------------------------------------------------------
-
 }
 
 
@@ -122,66 +119,46 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
     switch (pitch) {
       //This arrangement uses all the keys on the Korg nanokeys
       //Arranged in blocks around the black and white notes
-      case 48:
-      case 50:
-      case 52:
+      case 48: case 50: case 52:
         samplepntGU = 0;
-        samplecntGU = GU_LEN;
+        samplecntGU = MINIMUM(GU_LEN,samplecutoff1);   //GU_LEN;
         break;
-      case 49:
-      case 51:
+      case 49: case 51:
         samplepntBG2 = 0;
-        samplecntBG2 = BG2_LEN;
+        samplecntBG2 = MINIMUM(BG2_LEN,samplecutoff1);   //BG2_LEN;
         break;
-      case BDMIDI:
-      case 53:
-      case 55:
-      case 57:
-      case 59:
+      case BDMIDI: case 53: case 55: case 57: case 59:
         samplepntBD = 0;
         samplecntBD = BD_LEN;
         break;
-      //case 39:
-      case SDMIDI:
-      case 54:
-      case 56:
-      case 58:
+      case SDMIDI: case 54: case 56: case 58:
         samplepntCL = 0;
-        samplecntCL = CL_LEN;
+        samplecntCL = MINIMUM(CL_LEN,samplecutoff1);   //CL_LEN;
         break;
-      case HHMIDI:
-      case 60:
-      case 62:
-      case 64:
+      case HHMIDI: case 60: case 62: case 64:
         samplepntCW = 0;
-        samplecntCW = CW_LEN;
+        samplecntCW = MINIMUM(CW_LEN,samplecutoff2);   //CW_LEN;
         break;
       case LTMIDI:
       case 61:
       case 63:
         samplepntCY = 0;
-        samplecntCY = CY_LEN;
+        samplecntCY = MINIMUM(CY_LEN,samplecutoff2);   //CY_LEN;
         break;
       case 65:
       case 67:
       case 69:
       case 71:
         samplepntMA = 0;
-        samplecntMA = MA_LEN;
+        samplecntMA = MINIMUM(MA_LEN,samplecutoff2);   //MA_LEN;
         break;
       case 66:
       case 68:
       case 70:
         samplepntQU = 0;
-        samplecntQU = QU_LEN;
+        samplecntQU = MINIMUM(QU_LEN,samplecutoff2);   //QU_LEN;
         break;
       default:
-        //digitalWrite(BDPIN,HIGH);
-        //samplepntGU=0;
-        //samplecntGU=GU_LEN;// < samplecutoff ? GU_LEN : samplecutoff;
-        //digitalWrite(LED_BUILTIN, HIGH);
-        //WARNING: this will mess with CLK_OUT
-        //digitalWriteFast(LED_BUILTIN,HIGH);
         break;
     }
   }
@@ -238,8 +215,9 @@ void setup() {
   pinMode(A3, INPUT_PULLUP); // pattern select pot
   pinMode(A4, INPUT_PULLUP); // pattern select pot
   pinMode(A5, INPUT_PULLUP); // pattern select pot
-  //pinMode(A6, INPUT_PULLUP); // pattern select pot
-  //pinMode(A7, INPUT_PULLUP); // pattern select pot
+  //WARNING: SETTING PINMODE ON A6 AND A7 CAUSES THIS SKETCH TO FAIL!!
+  //pinMode(A6, INPUT); // pattern select pot
+  //pinMode(A7, INPUT); // pattern select pot
   pinMode(LED_BUILTIN, OUTPUT); //on board LED for
 
   // Set up Timer 1 to send a sample every interrupt.
@@ -247,7 +225,7 @@ void setup() {
   // Set CTC mode
   // Have to set OCR1A *after*, otherwise it gets reset to 0!
   TCCR1B = (TCCR1B & ~_BV(WGM13)) | _BV(WGM12);
-  TCCR1A = TCCR1A & ~(_BV(WGM11) | _BV(WGM10));
+  TCCR1A =  TCCR1A & ~(_BV(WGM11) | _BV(WGM10));
   // No prescaler
   TCCR1B = (TCCR1B & ~(_BV(CS12) | _BV(CS11))) | _BV(CS10);
   // Set the compare register (OCR1A).
@@ -308,7 +286,7 @@ void setup() {
   Serial.println("[f] to speed up, [d] to slow down.  [space] to pause.");
   Serial.println("[p] to get current pattern info");
 #endif
-  
+
 #ifdef DOMIDI
 
 
@@ -317,7 +295,7 @@ void setup() {
   MIDI.setHandleNoteOn(handleNoteOn);  // Put only the name of the function
   MIDI.setHandleNoteOff(handleNoteOff);  // Put only the name of the function
   MIDI.setHandleControlChange(handleControlChange);
-  
+
   MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to messages on channel 1
 
   //Serial.begin(115200); // This works with ttymid
@@ -363,67 +341,23 @@ void print_binary(int v, int num_places)
 
 
 
-
-void  process_voice(uint16_t *samplecnt,  const unsigned char *SAMPLE, uint16_t *spnt, uint8_t bitshift, uint16_t *total) {
-  /*if (samplecntGU) {
-    total+=((pgm_read_byte_near(GU + samplepntGU++)-128)<<bitshift)>>bitshift;
-    samplecntGU--;
-    }*/
-  if (*samplecnt) {
-    (*total) += ((pgm_read_byte_near(SAMPLE + (*spnt)++) - 128) << (bitshift)) >> (bitshift);
-    (*samplecnt)--;
-  }
-}
-
-//NB total was erroneously described as a uint!
-//TODO: we don't need to pass in samplecnt if we decrement the variable when we call this function..
-void process_pitched_voice(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, const unsigned char *SAMPLE, uint16_t *spnt, uint16_t bitshift, int16_t *total) {
-
-  //  if (samplecntBG2) {
-  //    phaccBG2+=samplepitch1;
-  //    if(phaccBG2 & 128){
-  //      phaccBG2 &= 127;
-  //      total+=((pgm_read_byte_near(BG2 + samplepntBG2++)-128)<<bitshift)>>bitshift;
-  //      samplecntBG2--;
-  //    }
-  //  }
+void process_pitched_voice_masked(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, const unsigned char *SAMPLE, uint16_t *spnt, uint8_t bitmask, int16_t *total) {
 
   if (*samplecnt) {
     *phacc += pitch;
     if (*phacc & 128) {
       *phacc &= 127;
-      (*total) += ((pgm_read_byte_near(SAMPLE + (*spnt)++) - 128) << (bitshift)) >> (bitshift);
+
+      uint8_t s = (pgm_read_byte_near(SAMPLE + (*spnt)++));
+      int8_t s2 = s - 128;
+      (*total) += s2;
       (*samplecnt)--;
     }
   }
 }
 
 
-//TODO: we don't need to pass in samplecnt if we decrement the variable when we call this function..
-void process_pitched_voice2(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, const unsigned char *SAMPLE, uint16_t *spnt, int16_t bitmask, int16_t *total) {
 
-  //  if (samplecntBG2) {
-  //    phaccBG2+=samplepitch1;
-  //    if(phaccBG2 & 128){
-  //      phaccBG2 &= 127;
-  //      total+=((pgm_read_byte_near(BG2 + samplepntBG2++)-128)<<bitshift)>>bitshift;
-  //      samplecntBG2--;
-  //    }
-  //  }
-
-
-  static int16_t grain;
-  if (*samplecnt) {
-    *phacc += pitch;
-    if (*phacc & 128) {
-      *phacc &= 127;
-      grain = (pgm_read_byte_near(SAMPLE + (*spnt)++) - 128);
-      grain = grain < 0 ? ~((~grain) && (~bitmask))  : grain && bitmask;
-      (*total) += grain;
-      (*samplecnt)--;
-    }
-  }
-}
 
 
 void loop() {
@@ -457,6 +391,9 @@ void loop() {
   uint8_t bitshift1 = 0,
           bitshift2 = 0;
 
+  uint8_t bitmask1 = 0xff,
+          bitmask2 = 0xff;
+
   //Pitch control:
   uint8_t divider, samplepitch1 = 129, samplepitch2 = 129;
   uint8_t phaccGU, phaccBG2, phaccBD, phaccCY,
@@ -473,6 +410,7 @@ void loop() {
   uint8_t ledonoff = 0;
 
   uint8_t sw2 = 0, sw3 = 0;
+  uint8_t beatCount = 0;
 
   while (1) {
 
@@ -480,25 +418,27 @@ void loop() {
     //------ Add current sample word to ringbuffer FIFO --------------------
 
     if (RingCount < 255) { //if space in ringbuffer
-      total = 0;
+      //total = 0;
+      int16_t total1 = 0,
+              total2 = 0;
 
       // BANK 1
-      //process_voice(&samplecntGU,GU,&samplepntGU,bitshift1,&total);
-      process_pitched_voice(&samplecntGU,samplepitch1,&phaccGU,GU,&samplepntGU,bitshift1,&total);
-      process_pitched_voice(&samplecntBG2,samplepitch1,&phaccBG2,BG2,&samplepntBG2,bitshift1,&total);
-      //process_voice(&samplecntBD,BD,&samplepntBD,bitshift1,&total);
-      process_pitched_voice(&samplecntBD,samplepitch1,&phaccBD,BD,&samplepntBD,0,&total);
-      //process_voice(&samplecntCL,CL,&samplepntCL,bitshift1,&total);
-      process_pitched_voice(&samplecntCL,samplepitch1,&phaccCL,CL,&samplepntCL,bitshift1,&total);
+      process_pitched_voice_masked(&samplecntGU, samplepitch1, &phaccGU, GU, &samplepntGU, bitmask1, &total1);
+      process_pitched_voice_masked(&samplecntBG2, samplepitch1, &phaccBG2, BG2, &samplepntBG2, bitmask1, &total1);
+      process_pitched_voice_masked(&samplecntBD, samplepitch1, &phaccBD, BD, &samplepntBD, bitmask1, &total1);
+      process_pitched_voice_masked(&samplecntCL, samplepitch1, &phaccCL, CL, &samplepntCL, bitmask1, &total1);
+
+      total1 = total1 > 0 ? total1 & bitmask1 : -((-total1) & bitmask1);
+      total = total1;
 
       //BANK 2
-      //process_voice(&samplecntCW,CW,&samplepntCW,bitshift2,&total);
-      process_pitched_voice(&samplecntCW,samplepitch2,&phaccCW,CW,&samplepntCW,bitshift2,&total);
-      //process_voice(&samplecntMA,MA,&samplepntMA,bitshift2,&total);
-      process_pitched_voice(&samplecntMA,samplepitch2,&phaccMA,MA,&samplepntMA,bitshift2,&total);
-      process_pitched_voice(&samplecntCY,samplepitch2,&phaccCY,CY,&samplepntCY,bitshift2,&total);
-      process_pitched_voice(&samplecntQU,samplepitch2,&phaccQU,QU,&samplepntQU,bitshift2,&total);
+      process_pitched_voice_masked(&samplecntCW, samplepitch2, &phaccCW, CW, &samplepntCW, bitmask2, &total2);
+      process_pitched_voice_masked(&samplecntMA, samplepitch2, &phaccMA, MA, &samplepntMA, bitmask2, &total2);
+      process_pitched_voice_masked(&samplecntCY, samplepitch2, &phaccCY, CY, &samplepntCY, bitmask2, &total2);
+      process_pitched_voice_masked(&samplecntQU, samplepitch2, &phaccQU, QU, &samplepntQU, bitmask2, &total2);
       
+      total2 = total2 > 0 ? total2 & bitmask2 : -((-total2) & bitmask2);
+      total += total2;
 
       if (total < -127) total = -127;
       if (total > 127) total = 127;
@@ -515,17 +455,11 @@ void loop() {
         if (!(tempocnt--)) {
           tempocnt = tempo;
 
-          if(!(--clockdiv)){ //NB! doing "clockdiv--" meant *five* beats!!
-            //ledonoff = !ledonoff;
-            //digitalWriteFast(13,HIGH);
-            digitalWriteFast(CLOCK_PIN,HIGH); //Clock out Hi
-            clockdiv=(patlength+1)>>2; //4; 
-
-            //This means there'll be gatediv goes around the outer while loop before the 
-            //gate goes low... depends on the execution time of *every instruction* in 
-            //the loop.. there must be a better way! 
-            gatediv = 10032;
-          }
+          if ((beatCount & 0x02) == 0)
+            digitalWriteFast(CLOCK_PIN, HIGH); //Clock out Hi
+          else
+            digitalWriteFast(CLOCK_PIN, LOW); //Clock out Lo
+          beatCount++;
 
           uint8_t trig = pgm_read_byte_near(pattern + (patselect << 4) + stepcnt++);
           PORTC = stepcnt; //Not sure what this does!
@@ -540,11 +474,11 @@ void loop() {
 
           if (trig & 128) {
             samplepntGU = 0;
-            samplecntGU = GU_LEN < samplecutoff1 ? GU_LEN : samplecutoff1;
+            samplecntGU = MINIMUM(GU_LEN,samplecutoff1);   //GU_LEN < samplecutoff1 ? GU_LEN : samplecutoff1;
           }
           if (trig & 64) {
             samplepntBG2 = 0;
-            samplecntBG2 = BG2_LEN < samplecutoff1 ? BG2_LEN : samplecutoff1;
+            samplecntBG2 = MINIMUM(BG2_LEN,samplecutoff1);   //BG2_LEN < samplecutoff1 ? BG2_LEN : samplecutoff1;
           }
           if (trig & 32) {
             samplepntBD = 0;
@@ -552,37 +486,26 @@ void loop() {
           }
           if (trig & 16) {
             samplepntCL = 0;
-            samplecntCL = CL_LEN < samplecutoff1 ? CL_LEN : samplecutoff1;
+            samplecntCL = MINIMUM(CL_LEN,samplecutoff1);   //CL_LEN < samplecutoff1 ? CL_LEN : samplecutoff1;
           }
           if (trig & 8) {
             samplepntCW = 0;
-            samplecntCW = CW_LEN < samplecutoff2 ? CW_LEN : samplecutoff2;
+            samplecntCW = MINIMUM(CW_LEN,samplecutoff2);   //CW_LEN < samplecutoff2 ? CW_LEN : samplecutoff2;
           }
           if (trig & 4) {
             samplepntMA = 0;
-            samplecntMA = MA_LEN < samplecutoff2 ? MA_LEN : samplecutoff2;
+            samplecntMA = MINIMUM(MA_LEN,samplecutoff2);   //MA_LEN < samplecutoff2 ? MA_LEN : samplecutoff2;
           }
           if (trig & 2) {
             samplepntCY = 0;
-            samplecntCY = CY_LEN < samplecutoff2 ? CY_LEN : samplecutoff2;
+            samplecntCY = MINIMUM(CY_LEN,samplecutoff2);   //CY_LEN < samplecutoff2 ? CY_LEN : samplecutoff2;
           }
           if (trig & 1) {
             samplepntQU = 0;
-            samplecntQU = QU_LEN < samplecutoff2 ? QU_LEN : samplecutoff2;
+            samplecntQU = MINIMUM(QU_LEN,samplecutoff2);  //QU_LEN < samplecutoff2 ? QU_LEN : samplecutoff2;
           }
         }
       }
-    }
-
-
-    /************************************************************************** 
-    We can't use millis() here because of the way that interrupts are configured. 
-    But we want the clock out to have a gate of 15ms (to comply with Korg Volca)
-
-    ***************************************************************************/
-    if(!(gatediv--)){
-      //digitalWriteFast(13,LOW);
-      digitalWriteFast(CLOCK_PIN,LOW);
     }
 
     //------------------------------------------------------------------------
@@ -615,6 +538,7 @@ void loop() {
             break;
           case 2:
             bitshift1 = sw3 ? (ADCL + (ADCH << 8)) >> 7 : 0; //TODO: interesting effects if bitshift and samplecutoff are on the same mux!
+            bitmask1 = 0xff << (bitshift1 == 7 ? 6 : bitshift1);
             break;
           case 3:
             samplecutoff2 = ((ADCL + (ADCH << 8)) << 3);
@@ -624,6 +548,7 @@ void loop() {
             break;
           case 5:
             bitshift2 = sw3 ? (ADCL + (ADCH << 8)) >> 7 : 0; //TODO: interesting effects if bitshift and samplecutoff are on the same mux!
+            bitmask2 = 0xff << (bitshift2 == 7 ? 6 : bitshift2);
             break;
           case 6:
             patselect = (ADCL + (ADCH << 8)) >> 6;
@@ -646,6 +571,8 @@ void loop() {
       else {
         //playing = 0;//change to zero if you want to turn beat on or off
         stepcnt = 0;
+        beatCount = 0;
+        digitalWriteFast(CLOCK_PIN, LOW); //Clock out Lo
       }
 
       //TODO: if this works, put it in the MUX block to explicity disable reading from DAC - quicker that way and it means control can be opened up to MIDI!
