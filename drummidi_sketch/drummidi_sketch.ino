@@ -139,22 +139,15 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
         samplepntCW = 0;
         samplecntCW = MINIMUM(CW_LEN,samplecutoff2);   //CW_LEN;
         break;
-      case LTMIDI:
-      case 61:
-      case 63:
+      case LTMIDI: case 61: case 63:
         samplepntCY = 0;
         samplecntCY = MINIMUM(CY_LEN,samplecutoff2);   //CY_LEN;
         break;
-      case 65:
-      case 67:
-      case 69:
-      case 71:
+      case 65: case 67: case 69: case 71:
         samplepntMA = 0;
         samplecntMA = MINIMUM(MA_LEN,samplecutoff2);   //MA_LEN;
         break;
-      case 66:
-      case 68:
-      case 70:
+      case 66: case 68: case 70:
         samplepntQU = 0;
         samplecntQU = MINIMUM(QU_LEN,samplecutoff2);   //QU_LEN;
         break;
@@ -473,35 +466,35 @@ void loop() {
           if (stepcnt != 0) digitalWriteFast(12, LOW); //Reset out Lo
 
           if (trig & 128) {
-            samplepntGU = 0;
+            samplepntGU = 512;//0;
             samplecntGU = MINIMUM(GU_LEN,samplecutoff1);   //GU_LEN < samplecutoff1 ? GU_LEN : samplecutoff1;
           }
           if (trig & 64) {
-            samplepntBG2 = 0;
+            samplepntBG2 = 512;//0;
             samplecntBG2 = MINIMUM(BG2_LEN,samplecutoff1);   //BG2_LEN < samplecutoff1 ? BG2_LEN : samplecutoff1;
           }
           if (trig & 32) {
-            samplepntBD = 0;
+            samplepntBD = 512;//0;
             samplecntBD = BD_LEN; //  < samplecutoff ? BD_LEN : samplecutoff;
           }
           if (trig & 16) {
-            samplepntCL = 0;
+            samplepntCL = 512;//0;
             samplecntCL = MINIMUM(CL_LEN,samplecutoff1);   //CL_LEN < samplecutoff1 ? CL_LEN : samplecutoff1;
           }
           if (trig & 8) {
-            samplepntCW = 0;
+            samplepntCW = 512;//0;
             samplecntCW = MINIMUM(CW_LEN,samplecutoff2);   //CW_LEN < samplecutoff2 ? CW_LEN : samplecutoff2;
           }
           if (trig & 4) {
-            samplepntMA = 0;
+            samplepntMA = 512;//0;
             samplecntMA = MINIMUM(MA_LEN,samplecutoff2);   //MA_LEN < samplecutoff2 ? MA_LEN : samplecutoff2;
           }
           if (trig & 2) {
-            samplepntCY = 0;
+            samplepntCY = 512;//0;
             samplecntCY = MINIMUM(CY_LEN,samplecutoff2);   //CY_LEN < samplecutoff2 ? CY_LEN : samplecutoff2;
           }
           if (trig & 1) {
-            samplepntQU = 0;
+            samplepntQU = 512;//0;
             samplecntQU = MINIMUM(QU_LEN,samplecutoff2);  //QU_LEN < samplecutoff2 ? QU_LEN : samplecutoff2;
           }
         }
@@ -536,7 +529,7 @@ void loop() {
           case 1:
             samplepitch1 = sw2 ? ((ADCL + (ADCH << 8)) >> 3) + 1 : 128;
             break;
-          case 2:
+          case 2: // the ternary statement checks that the switch for bitcrush is on or not
             bitshift1 = sw3 ? (ADCL + (ADCH << 8)) >> 7 : 0; //TODO: interesting effects if bitshift and samplecutoff are on the same mux!
             bitmask1 = 0xff << (bitshift1 == 7 ? 6 : bitshift1);
             break;
