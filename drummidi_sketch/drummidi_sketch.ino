@@ -9,6 +9,7 @@
 //#include "Arduino.h"
 
 #include "O2_data.h"
+#include "rng.h"
 
 #define POT0 A0
 #define POT1 A1
@@ -411,6 +412,7 @@ void loop() {
 
   uint8_t sw2 = 0, sw3 = 0;
   uint8_t beatCount = 0;
+  uint8_t rand_thresh;
 
   while (1) {
 
@@ -473,34 +475,42 @@ void loop() {
           if (stepcnt != 0) digitalWriteFast(12, LOW); //Reset out Lo
 
           if (trig & 128) {
-            samplepntGU = 0;
-            samplecntGU = MINIMUM(GU_LEN,samplecutoff1);   //GU_LEN < samplecutoff1 ? GU_LEN : samplecutoff1;
+            if(rand_thresh > rng_next()){
+              samplepntGU = 0;
+              samplecntGU = MINIMUM(GU_LEN,samplecutoff1);   //GU_LEN < samplecutoff1 ? GU_LEN : samplecutoff1;
+            }
           }
           if (trig & 64) {
-            samplepntBG2 = 0;
-            samplecntBG2 = MINIMUM(BG2_LEN,samplecutoff1);   //BG2_LEN < samplecutoff1 ? BG2_LEN : samplecutoff1;
+            if(rand_thresh > rng_next()){
+              samplepntBG2 = 0;
+              samplecntBG2 = MINIMUM(BG2_LEN,samplecutoff1);   //BG2_LEN < samplecutoff1 ? BG2_LEN : samplecutoff1;
+            }
           }
-          if (trig & 32) {
-            samplepntBD = 0;
-            samplecntBD = BD_LEN; //  < samplecutoff ? BD_LEN : samplecutoff;
+          if (trig & 32 & rand_thresh) {
+            if(rand_thresh > rng_next()){
+              samplepntBD = 0;
+              samplecntBD = BD_LEN; //  < samplecutoff ? BD_LEN : samplecutoff;
+            }
           }
-          if (trig & 16) {
-            samplepntCL = 0;
-            samplecntCL = MINIMUM(CL_LEN,samplecutoff1);   //CL_LEN < samplecutoff1 ? CL_LEN : samplecutoff1;
+          if (trig & 16 & rand_thresh) {
+            if(rand_thresh > rng_next()){
+              samplepntCL = 0;
+              samplecntCL = MINIMUM(CL_LEN,samplecutoff1);   //CL_LEN < samplecutoff1 ? CL_LEN : samplecutoff1;
+            }
           }
-          if (trig & 8) {
+          if (trig & 8 & rand_thresh) {
             samplepntCW = 0;
             samplecntCW = MINIMUM(CW_LEN,samplecutoff2);   //CW_LEN < samplecutoff2 ? CW_LEN : samplecutoff2;
           }
-          if (trig & 4) {
+          if (trig & 4 & rand_thresh) {
             samplepntMA = 0;
             samplecntMA = MINIMUM(MA_LEN,samplecutoff2);   //MA_LEN < samplecutoff2 ? MA_LEN : samplecutoff2;
           }
-          if (trig & 2) {
+          if (trig & 2 & rand_thresh) {
             samplepntCY = 0;
             samplecntCY = MINIMUM(CY_LEN,samplecutoff2);   //CY_LEN < samplecutoff2 ? CY_LEN : samplecutoff2;
           }
-          if (trig & 1) {
+          if (trig & 1 & rand_thresh) {
             samplepntQU = 0;
             samplecntQU = MINIMUM(QU_LEN,samplecutoff2);  //QU_LEN < samplecutoff2 ? QU_LEN : samplecutoff2;
           }
@@ -537,8 +547,9 @@ void loop() {
             samplepitch1 = sw2 ? ((ADCL + (ADCH << 8)) >> 3) + 1 : 128;
             break;
           case 2:
-            bitshift1 = sw3 ? (ADCL + (ADCH << 8)) >> 7 : 0; //TODO: interesting effects if bitshift and samplecutoff are on the same mux!
-            bitmask1 = 0xff << (bitshift1 == 7 ? 6 : bitshift1);
+            //bitshift1 = sw3 ? (ADCL + (ADCH << 8)) >> 7 : 0; //TODO: interesting effects if bitshift and samplecutoff are on the same mux!
+            //bitmask1 = 0xff << (bitshift1 == 7 ? 6 : bitshift1);
+            rand_thresh = sw3 ? (((ADCL + (ADCH << 8)) << 3)>>2) : B11111111;////(((ADCL + (ADCH << 8)) << 3)>>2) < rng_next() ? 1 : 0;
             break;
           case 3:
             samplecutoff2 = ((ADCL + (ADCH << 8)) << 3);
