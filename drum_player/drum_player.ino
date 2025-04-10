@@ -53,11 +53,7 @@
 #ifdef DOMIDI
 
 #include <MIDI.h>
-
-#define BDMIDI 36
-#define SDMIDI 39
-#define HHMIDI 42
-#define LTMIDI 45
+#include "midinotes.h"
 
 byte BDtoggle = 0, LTtoggle = 0;
 
@@ -120,7 +116,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
     switch (pitch) {
       //This arrangement uses all the keys on the Korg nanokeys
       //Arranged in blocks around the black and white notes
-      case 48: case 50: case 52:
+      case GUMIDI: case 50: case 52:
         samplepntGU = 0;
         samplecntGU = MINIMUM(GU_LEN,samplecutoff1);   //GU_LEN;
         break;
@@ -140,22 +136,15 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
         samplepntCW = 0;
         samplecntCW = MINIMUM(CW_LEN,samplecutoff2);   //CW_LEN;
         break;
-      case LTMIDI:
-      case 61:
-      case 63:
+      case LTMIDI: case 61: case 63:
         samplepntCY = 0;
         samplecntCY = MINIMUM(CY_LEN,samplecutoff2);   //CY_LEN;
         break;
-      case 65:
-      case 67:
-      case 69:
-      case 71:
+      case MAMIDI: case 67: case 69: case 71:
         samplepntMA = 0;
         samplecntMA = MINIMUM(MA_LEN,samplecutoff2);   //MA_LEN;
         break;
-      case 66:
-      case 68:
-      case 70:
+      case QUMIDI: case 68: case 70:
         samplepntQU = 0;
         samplecntQU = MINIMUM(QU_LEN,samplecutoff2);   //QU_LEN;
         break;
