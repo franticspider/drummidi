@@ -16,7 +16,7 @@ g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp
 
 echo "...success!"  
   
-rm ../output/*  
+rm -f ../output/*  
 cd ../output
 echo ""
 echo "  now testing.."

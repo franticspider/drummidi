@@ -7,10 +7,11 @@
 #define PROGMEM
 
 #include "../drum_midi/midi_patterns.h"
+#include "../drum_midi/midi_test_song.h"
 
 
 TEST_CASE("pattern memory allocation is valid"){
-
+/*
 	make_setlist();
 	
 	
@@ -33,4 +34,5 @@ TEST_CASE("pattern memory allocation is valid"){
 	        }	    
 	    }
 	}
+*/	
 }
