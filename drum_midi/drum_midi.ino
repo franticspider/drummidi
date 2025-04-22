@@ -1,8 +1,3 @@
-// O2 Minipops rhythm box (c) DSP Synthesizers 2016
-// Free for non commercial use
-// http://janostman.wordpress.com
-
-
 //#include <avr/interrupt.h>
 //#include <avr/io.h>
 //#include <avr/pgmspace.h>
@@ -37,8 +32,10 @@
 #define RUNSTOP_PIN (4)
 #define SW2_PIN (6)
 #define SW3_PIN (8)
+#define RX2_PIN (7)
+#define TX2_PIN (9)
+//#define VOLCA_MS (4)
 
-#define VOLCA_MS (4)
 
 // Uncomment the following if you want serial (needs ~4% prog storage!)
 //#define DOSERIAL
@@ -57,6 +54,7 @@
 #include <MIDI.h>
 #include "midinotes.h"
 #include "midi_patterns.h"
+#include "midi_test_song.h"
 
 byte BDtoggle = 0, LTtoggle = 0;
 
@@ -106,6 +104,8 @@ ISR(TIMER1_COMPA_vect) {
 //uint16_t samplecntGU, samplecntBG2, samplecntBD, samplecntCL, samplecntCW, samplecntCY, samplecntMA, samplecntQU;
 uint16_t samplecutoff1 = 8192, samplecutoff2 = 8192;
 
+
+SoftwareSerial drumRxTx(RX2_PIN,TX2_PIN);
 
 void setup() {
 
@@ -228,11 +228,20 @@ void setup() {
 
   //Serial.begin(115200); // This works with ttymid
   Serial.begin(31250);//This is the Midi standard - use for sending via RX
+
+  drumRxTx.begin(31250);
+
 #endif
 
 }
 
+void sendDrum(unsigned char note, unsigned char velocity){
 
+  // Send "Note On" for Middle C on Channel 10 with full velocity
+  drumRxTx.write(0x99);  // Status byte: Note On, channel 10
+  drumRxTx.write(note);  // Data byte 1: Middle C (note number 60)
+  drumRxTx.write(velocity);  // Data byte 2: Velocity 127
+}
 
 
 #ifdef DOSERIAL
@@ -287,12 +296,13 @@ void process_pitched_voice_masked(uint16_t *samplecnt, uint8_t pitch, uint8_t *p
 
 void trig_to_midi(const uint8_t trig, const uint8_t bitval, const uint8_t rand_thresh, const uint8_t midival, const uint8_t channel){
   if (trig & bitval) {
-    if(rand_thresh > rng_next()){
-      MIDI.sendNoteOn(midival, 127, channel);
-    }
+    sendDrum(midival,127);
+    //if(rand_thresh > rng_next()){
+    //  MIDI.sendNoteOn(midival, 127, channel);
+    //}
   }
   else{
-    MIDI.sendNoteOff(midival, 0, channel);
+    //MIDI.sendNoteOff(midival, 0, channel);
   }
 }
 
@@ -309,7 +319,7 @@ void loop() {
   uint16_t halftempo = tempo*0.5;
   uint16_t tempocnt = 1;
   //uint8_t MUX=4;
-  uint8_t playing = 1;
+  uint8_t playing = 0;
 
   uint8_t patselect = 0;
   uint8_t patlength = pgm_read_byte_near(patlen + patselect);
@@ -399,10 +409,13 @@ void loop() {
 
           if(trig)
             MIDI.sendNoteOn(trig, 127, 1);
+
           //if(lasttrig)
           //  MIDI.sendNoteOff(lasttrig, 127, 1);
           //lasttrig=trig;
+          
         }
+        
         if(tempocnt == halftempo){
           MIDI.sendNoteOff(trig, 127, 1);
         }
@@ -471,7 +484,7 @@ void loop() {
       if (playing = 1){//digitalReadFast(RUNSTOP_PIN)) {
       }
       else {
-        //playing = 0;//change to zero if you want to turn beat on or off
+        playing = 0;//change to zero if you want to turn beat on or off
         stepcnt = 0;
         beatCount = 0;
         digitalWriteFast(CLOCK_PIN, LOW); //Clock out Lo

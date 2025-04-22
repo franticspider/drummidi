@@ -5,34 +5,18 @@
 
 #include <stdio.h>*/
 
-// Define a simple const struct
+// Define the Config struct with three const pointers
 typedef struct {
-    const char *name;
-    const int value;
+    const char *name;        // Pointer to constant character data
+    const int *value;        // Pointer to constant int
+    const char *description; // Pointer to constant character data
 } Config;
 
-// Define a struct that holds pointers to const Configs
+// Define the System struct pointing to an array of Configs
 typedef struct {
-    const Config *main_config;
-    const Config *backup_config;
+    const Config *configs;
+    const size_t config_count;
 } System;
-
-// Define the Config instances as const
-const Config MAIN_CONFIG = {
-    .name = "MainConfig",
-    .value = 42
-};
-
-const Config BACKUP_CONFIG = {
-    .name = "BackupConfig",
-    .value = 24
-};
-
-// Initialize the System struct with pointers to the const Configs
-const System SYSTEM = {
-    .main_config = &MAIN_CONFIG,
-    .backup_config = &BACKUP_CONFIG
-};
 
 /*
 // Demo function to show usage
@@ -48,60 +32,74 @@ int main(void) {
 */
 
 
-
-
 /*
-
 First step is to make sure this works! We'll just use the O2 drum patterns as midi notes - make sure we can get a signal out...
-
 */
 typedef struct
 {
-  unsigned char len;
-  unsigned char drumpattern[];
-  unsigned char basspattern[];
-  unsigned char leadpattern[];
+  const unsigned char len;
+  const unsigned char *drumpattern;
+  const unsigned char *basspattern;
+  const unsigned char *leadpattern;
 }patstruct;
 
 
-typedef struct td_songstruct{
-  unsigned char seqlen;
-  patstruct patterns[];
-  unsigned char sequence[];
+typedef struct {
+  const unsigned char blocklen;
+  const patstruct **patterns;
+}blockstruct;
+
+
+typedef struct {
+  const blockstruct *blocks;
+  const unsigned char songlen;
 }songstruct;
 
 
-const patstruct song1patterns[2]  ={{
-  8,
-  {   0b00101100,      //Hard rock16
-      0b00000000,
-      0b00000100,
-      0b00000000,
-      0b00101110,
-      0b00000000,
-      0b00100100,
-      0b00000000,},
-  { 31, 32, 33, 34, 35, 36, 37, 38},
-  { 91, 92, 93, 94, 95, 96, 97, 98},
-},{
-  8,
-  {  1,  2,  3,  4,  5,  6,  7,  8},
-  {  1,  2,  3,  4,  5,  6,  7,  8},
-  {  1,  2,  3,  4,  5,  6,  7,  8},
-}}; 
+typedef struct {
+  const songstruct *songs;
+  const unsigned char setlen;
+}setstruct;
 
 
-const songstruct song1 = {8,&song1patterns,{0,0,1,1,0,1,0,1}};
-
-const unsigned char SONGCOUNT = 4;
-
-void make_setlist(){
+/*******************************************************************/
+/* CLASS METHODS: MORE PORTABLE THAN STRUCTS! **********************/
+/*******************************************************************/
 
 	
+class PattClass {
+public:
+	
 
-}
+    unsigned char len;
+    unsigned char *drumpattern;
+    unsigned char *basspattern;
+    unsigned char *leadpattern;	
 
+    void add_drum_pattern(unsigned char len, unsigned char * pattern){
+    }
+};
 
+/*
+class Song {
+private:
+    const uint8_t _numPatterns;
+    const Pattern* const* _patterns;  // pointer to array of pointers to Pattern
+
+public:
+    Song(uint8_t numPatterns, const Pattern* const* patterns)
+        : _numPatterns(numPatterns), _patterns(patterns) {}
+
+    uint8_t length() const {
+        return _numPatterns;
+    }
+
+    const Pattern* getPattern(uint8_t index) const {
+        if (index >= _numPatterns) return nullptr;
+        return _patterns[index];
+    }
+};
+*/
 
 /*******************************************************************/
 /* OLD METHODS: DELETE WHEN ABOVE IS WORKING! **********************/

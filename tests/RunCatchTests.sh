@@ -12,7 +12,9 @@ echo "building tests..."
 
 RP="../debug"
 #TODO: can't use wildcards e.g. ../release/*.o because of multiple 'main's... fix!
-g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp 
+#g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp 
+# recommened by chatGPT for arduino: 
+g++ -std=c++11 -Wall -DDEBIG -g -o test *.cpp
 
 echo "...success!"  
   

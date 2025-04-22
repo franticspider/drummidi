@@ -286,7 +286,7 @@ void setup() {
   MIDI.setHandleNoteOff(handleNoteOff);  // Put only the name of the function
   MIDI.setHandleControlChange(handleControlChange);
 
-  MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to messages on channel 1
+  MIDI.begin(MIDIDRUMCHANNEL);//MIDI_CHANNEL_OMNI);  // Listen to messages on channel 1
 
   //Serial.begin(115200); // This works with ttymid
   Serial.begin(31250);//This is the Midi standard - use for sending via RX
