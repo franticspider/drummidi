@@ -37,9 +37,10 @@ int main(void) {
 }
 */
 
-const patstruct testpat1 = {
+const patstruct testpat1 PROGMEM = {
     .len = 8,
-    .drumpattern = (const unsigned char[]) {    0b00101100,      //Hard rock16
+    .drumpattern = (const unsigned char[]) {    
+                          0b00101100,      //Hard rock16
                           0b00000000,
                           0b00000100,
                           0b00000000,
@@ -52,9 +53,10 @@ const patstruct testpat1 = {
 };
 
 
-const patstruct testpat2 = {
+const patstruct testpat2 PROGMEM = {
     .len = 8,
-    .drumpattern = (const unsigned char[]) {    0b00101100,      //Hard rock16
+    .drumpattern = (const unsigned char[]) {
+                          0b00101100,      //Hard rock16
                           0b00101100,
                           0b00000100,
                           0b00000100,
@@ -62,19 +64,53 @@ const patstruct testpat2 = {
                           0b00101110,
                           0b00100100,
                           0b00101110},
-    //.drumpattern = (const unsigned char[]){39, 42, 43, 44, 55, 66, 87, 98}, 
     .basspattern = (const unsigned char[]){39, 42, 43, 44, 55, 66, 87, 98},
-    .leadpattern = (const unsigned char[]){91, 92, 93, 94, 95, 96, 97, 98}
+    .leadpattern = (const unsigned char[]){91, 91, 91, 103, 103, 91, 103, 103}
 };
 
-/*
+
+const patstruct testpat3 PROGMEM = {
+    .len = 4,
+    .drumpattern = (const unsigned char[]) {
+                          0b00101100,      //Hard rock16
+                          0b00101100,
+                          0b00000100,
+                          0b00000100,
+                          0b00101110,
+                          0b00101110,
+                          0b00100100,
+                          0b00101110},
+    .basspattern = (const unsigned char[]){49, 52, 53, 54, 65, 76, 87, 108},
+    .leadpattern = (const unsigned char[]){91, 91, 91, 103, 103, 91, 103, 103}
+};
+
+
+
 const blockstruct testblock1 = {
     .blocklen = 4,
-    .patterns = (const patstruct**){&testpat1, &testpat1, &testpat1, &testpat2}
-};*/
+    .patterns = (const patstruct*[]){&testpat1, &testpat2, 
+                                     &testpat1, &testpat2}
+    };
 
 
+const blockstruct testblock2 = {
+    .blocklen = 6,
+    .patterns = (const patstruct*[]){&testpat3, &testpat3, &testpat3,         
+                                     &testpat1, &testpat3, &testpat3}
+    };
 
+
+const songstruct testsong1 = {
+    .songlen = 4,
+    .blocks = (const blockstruct*[]){&testblock1, &testblock2,
+                                     &testblock1, &testblock2}
+    };
+
+
+const setstruct testset = {
+    .setlen = 8,
+    .songs = (const songstruct*[]){&testsong1, NULL, &testsong1, NULL,&testsong1, NULL, NULL, &testsong1}
+    }; 
 
 
 
@@ -107,12 +143,6 @@ const patstruct song1patterns[2]  ={{
 const songstruct song1 = {8,&song1patterns,{0,0,1,1,0,1,0,1}};
 
 const unsigned char SONGCOUNT = 4;
-
-void make_setlist(){
-
-	
-
-}
 */
 
 

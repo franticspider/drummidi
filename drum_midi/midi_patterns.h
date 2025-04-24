@@ -38,9 +38,9 @@ First step is to make sure this works! We'll just use the O2 drum patterns as mi
 typedef struct
 {
   const unsigned char len;
-  const unsigned char *drumpattern;
-  const unsigned char *basspattern;
-  const unsigned char *leadpattern;
+  const unsigned char PROGMEM *drumpattern;
+  const unsigned char PROGMEM *basspattern;
+  const unsigned char PROGMEM *leadpattern;
 }patstruct;
 
 
@@ -51,14 +51,14 @@ typedef struct {
 
 
 typedef struct {
-  const blockstruct *blocks;
   const unsigned char songlen;
+  const blockstruct **blocks;
 }songstruct;
 
 
 typedef struct {
-  const songstruct *songs;
   const unsigned char setlen;
+  const songstruct **songs;
 }setstruct;
 
 
