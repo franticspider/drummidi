@@ -1,36 +1,5 @@
 
-
-
-/* CHATGPT SUGGESTS:
-
-#include <stdio.h>*/
-
-// Define the Config struct with three const pointers
-typedef struct {
-    const char *name;        // Pointer to constant character data
-    const int *value;        // Pointer to constant int
-    const char *description; // Pointer to constant character data
-} Config;
-
-// Define the System struct pointing to an array of Configs
-typedef struct {
-    const Config *configs;
-    const size_t config_count;
-} System;
-
-/*
-// Demo function to show usage
-void printSystemConfig(const System *sys) {
-    printf("Main Config: %s = %d\n", sys->main_config->name, sys->main_config->value);
-    printf("Backup Config: %s = %d\n", sys->backup_config->name, sys->backup_config->value);
-}
-
-int main(void) {
-    printSystemConfig(&SYSTEM);
-    return 0;
-}
-*/
-
+#ifdef USE_PROGMEM
 
 /*
 First step is to make sure this works! We'll just use the O2 drum patterns as midi notes - make sure we can get a signal out...
@@ -42,6 +11,17 @@ typedef struct
   const unsigned char PROGMEM *basspattern;
   const unsigned char PROGMEM *leadpattern;
 }patstruct;
+#else
+typedef struct
+{
+  const unsigned char len;
+  const unsigned char *drumpattern;
+  const unsigned char *basspattern;
+  const unsigned char *leadpattern;
+}patstruct;
+#endif
+
+
 
 
 typedef struct {

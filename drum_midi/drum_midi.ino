@@ -127,14 +127,6 @@ void setup() {
   pinMode(11, OUTPUT);
   pinMode(12, OUTPUT);      //Reset output
 
-
-  //These were for the AMUX - not needed now!
-  //pinMode(14,OUTPUT);       //SEQ cnt output
-  //pinMode(15,OUTPUT);
-  //pinMode(16,OUTPUT);
-  //pinMode(17,OUTPUT);
-
-
   pinMode(A0, INPUT_PULLUP); // pot read
   pinMode(A1, INPUT_PULLUP); // tempo pot
   pinMode(A2, INPUT_PULLUP); // pattern select pot
@@ -269,23 +261,6 @@ void print_binary(int v, int num_places)
 #endif
 
 
-
-void process_pitched_voice_masked(uint16_t *samplecnt, uint8_t pitch, uint8_t *phacc, const unsigned char *SAMPLE, uint16_t *spnt, uint8_t bitmask, int16_t *total) {
-
-  if (*samplecnt) {
-    *phacc += pitch;
-    if (*phacc & 128) {
-      *phacc &= 127;
-
-      uint8_t s = (pgm_read_byte_near(SAMPLE + (*spnt)++));
-      int8_t s2 = s - 128;
-      (*total) += s2;
-      (*samplecnt)--;
-    }
-  }
-}
-
-
 void sendDrum(unsigned char note, unsigned char velocity){
 
   // Send "Note On" for Middle C on Channel 10 with full velocity
@@ -298,9 +273,6 @@ void sendDrum(unsigned char note, unsigned char velocity){
 void trig_to_midi(const uint8_t trig, const uint8_t bitval, const uint8_t rand_thresh, const uint8_t midival, const uint8_t channel){
   if (trig & bitval) {
     sendDrum(midival,127);
-    //if(rand_thresh > rng_next()){
-    //  MIDI.sendNoteOn(midival, 127, channel);
-    //}
   }
   else{
     //MIDI.sendNoteOff(midival, 0, channel);
@@ -321,6 +293,7 @@ void loop() {
   uint16_t tempocnt = 1;
   //uint8_t MUX=4;
   uint8_t playing = 0;
+  uint8_t finishnote = 0;
   uint8_t songfinished = 0;
 
   //indexes for song structs: 
@@ -330,7 +303,7 @@ void loop() {
   uint8_t songidx = 0;
 
   uint8_t patselect = 0;
-  uint8_t patlength = pgm_read_byte_near(patlen + patselect);
+  uint8_t patlength = 15;//pgm_read_byte_near(patlen + patselect);
 
   uint8_t bitshift1 = 0,
           bitshift2 = 0;
@@ -378,7 +351,7 @@ void loop() {
 
       //------------------------------------------------------------------------
       //--------- sequencer block ----------------------------------------------
-      if (playing) {
+      if (playing | finishnote) {
         if (!(tempocnt--)) {
           tempocnt = tempo;
 
@@ -389,7 +362,13 @@ void loop() {
           beatCount++;
 
           //trig = pgm_read_byte_near(pattern + (patselect << 4) + stepcnt++);
+#ifdef USE_PROGMEM  
           trig = pgm_read_byte_near(patt->drumpattern[stepidx]);
+#else
+          trig = patt->drumpattern[stepidx];
+#endif
+          
+          
           PORTC = stepcnt; //Not sure what this does!
  
           // Uncomment if you want to mask drums...
@@ -414,31 +393,24 @@ void loop() {
           trig_to_midi(trig,   1, rand_thresh, QUMIDI, MIDIDRUMCHANNEL);
 
           //todo(sjh): make sure stepcnt is in sync with the above
+#ifdef USE_PROGMEM  
           //trig = pgm_read_byte_near(midi_pattern + (patselect << 4) + stepcnt);
           trig = pgm_read_byte_near(patt->leadpattern[stepidx]);
+#else
+          trig = patt->leadpattern[stepidx];
+#endif
 
-          //if(trig&256){
-          //  notechan = 1;
-          //}else{
-          //  notechan = 2;
-          //}
-
-          //trig = trig & B00111111;
-          //trig_to_midi(1, 1, B11111111, trig, notechan);
-          //MIDI.sendNoteOn(rng_next() & B00111111, 127, 1);
-
-          if(trig)
+          if(trig>10)
             MIDI.sendNoteOn(trig, 127, 1);
-
-
-          
+            
+#ifdef USE_PROGMEM  
           trig = pgm_read_byte_near(patt->basspattern[stepidx]);  
-          if(trig)
-            MIDI.sendNoteOn(trig, 127, 2);
+#else
+          trig = patt->basspattern[stepidx];  
+#endif
 
-          //if(lasttrig)
-          //  MIDI.sendNoteOff(lasttrig, 127, 1);
-          //lasttrig=trig;
+          if(trig > 10)
+            MIDI.sendNoteOn(trig, 127, 2);
 
           if(++stepidx == patt->len){
             stepidx=0;
@@ -446,21 +418,23 @@ void loop() {
                 patidx=0;
                 if(++blockidx == song->songlen){
                     blockidx=0;
-                    playing = false;
-                }else{
-                    block = (blockstruct *) song->blocks[blockidx];
-                    patt = (patstruct *) block->patterns[patidx];
+                    songfinished = true;
                 }
-            }else{
-               patt = (patstruct *) block->patterns[patidx];
+                block = (blockstruct *) song->blocks[blockidx];
             }
-          }    
-          
+            patt = (patstruct *) block->patterns[patidx];
+          }   
+          // tell the sequencer we have notes to finish!  
+          finishnote = 1;
         }
         
         if(tempocnt == halftempo){
-          MIDI.sendNoteOff(trig, 127, 1);
+          //MIDI.sendNoteOn(trig, 0, 1);
+          //OR all notes offL 
+          MIDI.sendControlChange(123,0,1);
+          //MIDI.sendNoteOff(trig, 127, 1);
           MIDI.sendNoteOff(trig, 127, 2);
+          finishnote = 0;
         }
       }
     }
@@ -507,9 +481,9 @@ void loop() {
             //bitmask2 = 0xff << (bitshift2 == 7 ? 6 : bitshift2);
             break;
           case 6:
-            songidx = 7; //TODO (sjh): tidy up the patselect variables... 
+            //songidx = 7; //TODO (sjh): tidy up the patselect variables... 
             patselect = 15;//(ADCL + (ADCH << 8)) >> 6;
-            patlength = pgm_read_byte_near(patlen + patselect);
+            //patlength = pgm_read_byte_near(patlen + patselect);
             break;
           case 7:
             //tempo = 100 + 3500;//((ADCL + (ADCH << 8)) << 2);
@@ -535,6 +509,14 @@ void loop() {
         stepcnt = 0;
         beatCount = 0;
 
+        if(songfinished | sw2){
+          songidx++;
+          if(songidx == testset.setlen){
+            songidx = 0;
+          }
+        }
+
+        //restart the song
         songfinished = 0;
         stepidx = 0;
         patidx = 0;

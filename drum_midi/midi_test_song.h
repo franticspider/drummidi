@@ -1,43 +1,173 @@
 
-
-
-/* CHATGPT SUGGESTS:
-
-#include <stdio.h>*/
-
-
-// Define actual values to be pointed to
-const int VALUE_MAIN = 42;
-const int VALUE_BACKUP = 24;
-const int VALUE_EXTRA = 99;
-
-// Define a const array of Configs with pointers to the above values
-const Config CONFIG_ARRAY[] = {
-    { .name = "MainConfig",   .value = &VALUE_MAIN,   .description = "Primary configuration settings" },
-    { .name = "BackupConfig", .value = &VALUE_BACKUP, .description = "Fallback configuration" },
-    { .name = "ExtraConfig",  .value = &VALUE_EXTRA,  .description = "Extra features or debugging" }
+#ifdef USE_PROGMEM
+static const patstruct id_song_1 PROGMEM = {
+#else
+static const patstruct id_song_1 = {
+#endif
+    .len = 8,
+    .drumpattern = (const unsigned char[]) {    
+                          0b01100010,      //snarey repeat so we have a counter
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010},
+    .basspattern = (const unsigned char[]) {C2, 0, 0, 0, 0, 0, 0, 0},
+    .leadpattern = (const unsigned char[]) {C2, 0, 0, 0, 0, 0, 0, 0}
 };
 
-// Initialize the System
-const System SYSTEM = {
-    .configs = CONFIG_ARRAY,
-    .config_count = sizeof(CONFIG_ARRAY) / sizeof(CONFIG_ARRAY[0])
+#ifdef USE_PROGMEM
+static const patstruct id_song_2 PROGMEM = {
+#else
+static const patstruct id_song_2 = {
+#endif
+    .len = 8,
+    .drumpattern = (const unsigned char[]) {    
+                          0b01100010,      //snarey repeat so we have a counter
+                          0b01100010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010},
+    .basspattern = (const unsigned char[]) {C2, C2, 0, 0, 0, 0, 0, 0},
+    .leadpattern = (const unsigned char[]) {C2, C2, 0, 0, 0, 0, 0, 0}
 };
 
-/*
-// Demo function to show usage
-void printSystemConfig(const System *sys) {
-    printf("Main Config: %s = %d\n", sys->main_config->name, sys->main_config->value);
-    printf("Backup Config: %s = %d\n", sys->backup_config->name, sys->backup_config->value);
-}
 
-int main(void) {
-    printSystemConfig(&SYSTEM);
-    return 0;
-}
-*/
 
-const patstruct testpat1 PROGMEM = {
+#ifdef USE_PROGMEM
+static const patstruct not_you_culture_1 PROGMEM = {
+#else
+static const patstruct not_you_culture_1 = {
+#endif
+    .len = 32,
+    .drumpattern = (const unsigned char[]) {   
+        0b01000001,      //Reggae16
+        0b00000100,
+        0b10000000,
+        0b00000000,
+        0b00010110,
+        0b00000000,
+        0b10010000,
+        0b00000000,
+        0b00100000,
+        0b00000000,
+        0b10010000,
+        0b00000000,
+        0b00000110,
+        0b00000000,
+        0b10000100,
+        0b00000000,
+        0b01000001,      //Reggae16
+        0b00000100,
+        0b10000000,
+        0b00000000,
+        0b00010110,
+        0b00000000,
+        0b10010000,
+        0b00000000,
+        0b00100000,
+        0b00000000,
+        0b10010000,
+        0b00000000,
+        0b00000110,
+        0b00000000,
+        0b10000100,
+        0b00000000,
+    },
+    .basspattern = (const unsigned char[]) {D2, 0, 0, D2, 
+                                            0, 0, D2, 0, 
+                                            0, 0, 0, 0, 
+                                            0, F2, 0, 0,
+                                            D2, 0, 0, 0, 
+                                            0, 0, 0, 0,
+                                            D2, C2, 0, C2, 
+                                            0, C2, 0, C2},
+    .leadpattern = (const unsigned char[]) {D2, 0, 0, D2, 
+                                            0, 0, D2, 0, 
+                                            0, 0, 0, 0, 
+                                            0, F2, 0, 0,
+                                            D2, 0, 0, 0, 
+                                            0, 0, 0, 0,
+                                            D2, C2, 0, C2, 
+                                            0, C2, 0, C2}
+};
+
+
+
+
+
+
+#ifdef USE_PROGMEM
+static const patstruct id_song_3 PROGMEM = {
+#else
+static const patstruct id_song_3 = {
+#endif
+    .len = 8,
+    .drumpattern = (const unsigned char[]) {    
+                          0b01100010,      //snarey repeat so we have a counter
+                          0b01100010,
+                          0b01100010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010},
+    .basspattern = (const unsigned char[]) {C3, C3, C3, 0, 0, 0, 0, 0},
+    .leadpattern = (const unsigned char[]) {C3, C3, C3, 0, 0, 0, 0, 0}
+};
+
+
+#ifdef USE_PROGMEM
+static const patstruct id_song_4 PROGMEM = {
+#else
+static const patstruct id_song_4 = {
+#endif
+    .len = 8,
+    .drumpattern = (const unsigned char[]) {    
+                          0b01100010,      //snarey repeat so we have a counter
+                          0b01100010,
+                          0b01100010,
+                          0b01100010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010},
+    .basspattern = (const unsigned char[]) {C4, C4, C4, C4, 0, 0, 0, 0},
+    .leadpattern = (const unsigned char[]) {C4, C4, C4, C4, 0, 0, 0, 0}
+};
+
+
+#ifdef USE_PROGMEM
+static const patstruct id_song_5 PROGMEM = {
+#else
+static const patstruct id_song_5 = {
+#endif
+    .len = 8,
+    .drumpattern = (const unsigned char[]) {    
+                          0b01100010,      //snarey repeat so we have a counter
+                          0b01100010,
+                          0b01100010,
+                          0b01100010,
+                          0b01100010,
+                          0b00000010,
+                          0b00000010,
+                          0b00000010},
+    .basspattern = (const unsigned char[]) {C5, C5, C5, C5, C5, 0, 0, 0},
+    .leadpattern = (const unsigned char[]) {C5, C5, C5, C5, C5, 0, 0, 0}
+};
+
+
+
+#ifdef USE_PROGMEM
+static const patstruct testpat1 PROGMEM = {
+#else
+static const patstruct testpat1 = {
+#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {    
                           0b00101100,      //Hard rock16
@@ -53,7 +183,11 @@ const patstruct testpat1 PROGMEM = {
 };
 
 
+#ifdef USE_PROGMEM
 const patstruct testpat2 PROGMEM = {
+#else
+const patstruct testpat2 = {
+#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {
                           0b00101100,      //Hard rock16
@@ -69,7 +203,11 @@ const patstruct testpat2 PROGMEM = {
 };
 
 
+#ifdef USE_PROGMEM
 const patstruct testpat3 PROGMEM = {
+#else
+const patstruct testpat3 = {
+#endif
     .len = 4,
     .drumpattern = (const unsigned char[]) {
                           0b00101100,      //Hard rock16
@@ -84,6 +222,38 @@ const patstruct testpat3 PROGMEM = {
     .leadpattern = (const unsigned char[]){91, 91, 91, 103, 103, 91, 103, 103}
 };
 
+
+const blockstruct block_id_1 = {
+    .blocklen = 1,
+    .patterns = (const patstruct*[]){&id_song_1}
+    };
+
+
+const blockstruct block_id_2 = {
+    .blocklen = 7,
+    .patterns = (const patstruct*[]){&id_song_2, &not_you_culture_1, 
+    		&not_you_culture_1, &not_you_culture_1,
+    		&not_you_culture_1, &not_you_culture_1,
+    		&not_you_culture_1}
+    };
+
+
+const blockstruct block_id_3 = {
+    .blocklen = 1,
+    .patterns = (const patstruct*[]){&id_song_3}
+    };
+
+
+const blockstruct block_id_4 = {
+    .blocklen = 1,
+    .patterns = (const patstruct*[]){&id_song_4}
+    };
+
+
+const blockstruct block_id_5 = {
+    .blocklen = 1,
+    .patterns = (const patstruct*[]){&id_song_5}
+    };
 
 
 const blockstruct testblock1 = {
@@ -101,48 +271,41 @@ const blockstruct testblock2 = {
 
 
 const songstruct testsong1 = {
-    .songlen = 4,
-    .blocks = (const blockstruct*[]){&testblock1, &testblock2,
-                                     &testblock1, &testblock2}
+    .songlen = 6,
+    .blocks = (const blockstruct*[]){&block_id_1,&block_id_1,&testblock1, 
+                                    &testblock2,
+                                    &testblock1, &testblock2}
     };
 
 
+const songstruct song_not_u_culture = {
+    .songlen = 1,
+    .blocks = (const blockstruct*[]){&block_id_2}
+    };
+
+
+const songstruct testsong3 = {
+    .songlen = 1,
+    .blocks = (const blockstruct*[]){&block_id_3}
+    };
+
+
+const songstruct testsong4 = {
+    .songlen = 1,
+    .blocks = (const blockstruct*[]){&block_id_4}
+    };
+
+
+const songstruct testsong5 = {
+    .songlen = 1,
+    .blocks = (const blockstruct*[]){&block_id_5}
+    };
+
 const setstruct testset = {
-    .setlen = 8,
-    .songs = (const songstruct*[]){&testsong1, NULL, &testsong1, NULL,&testsong1, NULL, NULL, &testsong1}
+    .setlen = 5,
+    .songs = (const songstruct*[]){ &testsong1, &song_not_u_culture,  &testsong3, &testsong5, &testsong4}
     }; 
 
 
-
-/*
-
-First step is to make sure this works! We'll just use the O2 drum patterns as midi notes - make sure we can get a signal out...
-
-
-
-const patstruct song1patterns[2]  ={{
-  8,
-  {   0b00101100,      //Hard rock16
-      0b00000000,
-      0b00000100,
-      0b00000000,
-      0b00101110,
-      0b00000000,
-      0b00100100,
-      0b00000000,},
-  { 31, 32, 33, 34, 35, 36, 37, 38},
-  { 91, 92, 93, 94, 95, 96, 97, 98},
-},{
-  8,
-  {  1,  2,  3,  4,  5,  6,  7,  8},
-  {  1,  2,  3,  4,  5,  6,  7,  8},
-  {  1,  2,  3,  4,  5,  6,  7,  8},
-}}; 
-
-
-const songstruct song1 = {8,&song1patterns,{0,0,1,1,0,1,0,1}};
-
-const unsigned char SONGCOUNT = 4;
-*/
 
 
