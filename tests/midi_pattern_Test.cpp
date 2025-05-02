@@ -11,6 +11,8 @@
 
 #include "../drum_midi/midinotes.h"
 #include "../drum_midi/midi_patterns.h"
+#include "../drum_midi/song_kids_today.h"
+#include "../drum_midi/song_tortoise.h"
 #include "../drum_midi/midi_test_song.h"
 
 #define SONGCOUNT (16)
