@@ -15,7 +15,7 @@
 #define POT5 A5
 
 
-#define  MINIMUM(LEN,CUTOFF)  ((LEN) < (CUTOFF) ? (LEN) : (CUTOFF))
+#define MINIMUM(LEN, CUTOFF) ((LEN) < (CUTOFF) ? (LEN) : (CUTOFF))
 
 
 /* HARDWARE FAULT!
@@ -54,6 +54,8 @@
 #include <MIDI.h>
 #include "midinotes.h"
 #include "midi_patterns.h"
+#include "song_kids_today.h"
+#include "song_tortoise.h"
 #include "midi_test_song.h"
 
 byte BDtoggle = 0, LTtoggle = 0;
@@ -72,7 +74,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define digitalPinToPINReg(P) \
   (((P) >= 0 && (P) <= 7) ? &PIND : (((P) >= 8 && (P) <= 13) ? &PINB : &PINC))
 #define digitalPinToBit(P) \
-  (((P) >= 0 && (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P) - 8 : (P) - 14))
+  (((P) >= 0 && (P) <= 7) ? (P) : (((P) >= 8 && (P) <= 13) ? (P)-8 : (P)-14))
 
 #define digitalReadFast(P) bitRead(*digitalPinToPINReg(P), digitalPinToBit(P))
 
@@ -92,8 +94,8 @@ volatile uint16_t SFREQ;
 
 ISR(TIMER1_COMPA_vect) {
   //-------------------  Ringbuffer handler -------------------------
-  if (RingCount) {                         //If entry in FIFO..
-    OCR2A = Ringbuffer[(RingRead++)];      //Output LSB of 16-bit DAC
+  if (RingCount) {                     //If entry in FIFO..
+    OCR2A = Ringbuffer[(RingRead++)];  //Output LSB of 16-bit DAC
     RingCount--;
   }
   //-----------------------------------------------------------------
@@ -102,10 +104,10 @@ ISR(TIMER1_COMPA_vect) {
 
 //uint16_t samplepntGU, samplepntBG2, samplepntBD, samplepntCL, samplepntCW, samplepntCY, samplepntMA, samplepntQU;
 //uint16_t samplecntGU, samplecntBG2, samplecntBD, samplecntCL, samplecntCW, samplecntCY, samplecntMA, samplecntQU;
-uint16_t samplecutoff1 = 8192, samplecutoff2 = 8192;
+//uint16_t samplecutoff1 = 8192, samplecutoff2 = 8192;
 
 
-SoftwareSerial drumRxTx(RX2_PIN,TX2_PIN);
+SoftwareSerial drumRxTx(RX2_PIN, TX2_PIN);
 
 void setup() {
 
@@ -114,36 +116,36 @@ void setup() {
   //Drum mute inputs
   pinMode(SW2_PIN, INPUT_PULLUP);
   pinMode(SW3_PIN, INPUT_PULLUP);
-  pinMode(RUNSTOP_PIN, INPUT_PULLUP); //My run/stop pin!
+  pinMode(RUNSTOP_PIN, INPUT_PULLUP);  //My run/stop pin!
 
   //pinMode(5,INPUT_PULLUP);
   //pinMode(6,INPUT_PULLUP);
   //pinMode(7,INPUT_PULLUP);
-  pinMode(CLOCK_PIN, OUTPUT);      //Clock output
+  pinMode(CLOCK_PIN, OUTPUT);  //Clock output
   //pinMode(9,INPUT_PULLUP);
 
   //pinMode(10,INPUT_PULLUP); //RUN - Stop input
   //8-bit PWM DAC pin
   pinMode(11, OUTPUT);
-  pinMode(12, OUTPUT);      //Reset output
+  pinMode(12, OUTPUT);  //Reset output
 
-  pinMode(A0, INPUT_PULLUP); // pot read
-  pinMode(A1, INPUT_PULLUP); // tempo pot
-  pinMode(A2, INPUT_PULLUP); // pattern select pot
-  pinMode(A3, INPUT_PULLUP); // pattern select pot
-  pinMode(A4, INPUT_PULLUP); // pattern select pot
-  pinMode(A5, INPUT_PULLUP); // pattern select pot
+  pinMode(A0, INPUT_PULLUP);  // pot read
+  pinMode(A1, INPUT_PULLUP);  // tempo pot
+  pinMode(A2, INPUT_PULLUP);  // pattern select pot
+  pinMode(A3, INPUT_PULLUP);  // pattern select pot
+  pinMode(A4, INPUT_PULLUP);  // pattern select pot
+  pinMode(A5, INPUT_PULLUP);  // pattern select pot
   //WARNING: SETTING PINMODE ON A6 AND A7 CAUSES THIS SKETCH TO FAIL!!
   //pinMode(A6, INPUT); // pattern select pot
   //pinMode(A7, INPUT); // pattern select pot
-  pinMode(LED_BUILTIN, OUTPUT); //on board LED for
+  pinMode(LED_BUILTIN, OUTPUT);  //on board LED for
 
   // Set up Timer 1 to send a sample every interrupt.
   cli();
   // Set CTC mode
   // Have to set OCR1A *after*, otherwise it gets reset to 0!
   TCCR1B = (TCCR1B & ~_BV(WGM13)) | _BV(WGM12);
-  TCCR1A =  TCCR1A & ~(_BV(WGM11) | _BV(WGM10));
+  TCCR1A = TCCR1A & ~(_BV(WGM11) | _BV(WGM10));
   // No prescaler
   TCCR1B = (TCCR1B & ~(_BV(CS12) | _BV(CS11))) | _BV(CS10);
   // Set the compare register (OCR1A).
@@ -153,7 +155,7 @@ void setup() {
   // Enable interrupt when TCNT1 == OCR1A
   TIMSK1 |= _BV(OCIE1A);
   sei();
-  OCR1A = 800;//800; //40KHz Samplefreq
+  OCR1A = 800;  //800; //40KHz Samplefreq
 
   // Set up Timer 2 to do pulse width modulation on D11
 
@@ -175,11 +177,11 @@ void setup() {
   OCR2A = 128;
 
   //set timer0 interrupt at 61Hz
-  TCCR0A = 0;// set entire TCCR0A register to 0
-  TCCR0B = 0;// same for TCCR0B
-  TCNT0  = 0;//initialize counter value to 0
+  TCCR0A = 0;  // set entire TCCR0A register to 0
+  TCCR0B = 0;  // same for TCCR0B
+  TCNT0 = 0;   //initialize counter value to 0
   // set compare match register for 62hz increments
-  OCR0A = 255;// = 61Hz
+  OCR0A = 255;  // = 61Hz
   // turn on CTC mode
   TCCR0A |= (1 << WGM01);
   // Set CS01 and CS00 bits for prescaler 1024
@@ -219,41 +221,33 @@ void setup() {
   MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to messages on channel 1
 
   //Serial.begin(115200); // This works with ttymid
-  Serial.begin(31250);//This is the Midi standard - use for sending via RX
+  Serial.begin(31250);  //This is the Midi standard - use for sending via RX
 
   drumRxTx.begin(31250);
 
 #endif
-
 }
 
 
 #ifdef DOSERIAL
-void print_binary(int v, int num_places)
-{
+void print_binary(int v, int num_places) {
   int mask = 0, n;
 
-  for (n = 1; n <= num_places; n++)
-  {
+  for (n = 1; n <= num_places; n++) {
     mask = (mask << 1) | 0x0001;
   }
   v = v & mask;  // truncate v to specified number of places
 
-  while (num_places)
-  {
+  while (num_places) {
 
-    if (v & (0x0001 << num_places - 1))
-    {
+    if (v & (0x0001 << num_places - 1)) {
       Serial.print("1");
-    }
-    else
-    {
+    } else {
       Serial.print("0");
     }
 
     --num_places;
-    if (((num_places % 4) == 0) && (num_places != 0))
-    {
+    if (((num_places % 4) == 0) && (num_places != 0)) {
       Serial.print("_");
     }
   }
@@ -261,20 +255,19 @@ void print_binary(int v, int num_places)
 #endif
 
 
-void sendDrum(unsigned char note, unsigned char velocity){
+void sendDrum(unsigned char note, unsigned char velocity) {
 
   // Send "Note On" for Middle C on Channel 10 with full velocity
-  drumRxTx.write(0x99);  // Status byte: Note On, channel 10
-  drumRxTx.write(note);  // Data byte 1: Middle C (note number 60)
+  drumRxTx.write(0x99);      // Status byte: Note On, channel 10
+  drumRxTx.write(note);      // Data byte 1: Middle C (note number 60)
   drumRxTx.write(velocity);  // Data byte 2: Velocity 127
 }
 
 
-void trig_to_midi(const uint8_t trig, const uint8_t bitval, const uint8_t rand_thresh, const uint8_t midival, const uint8_t channel){
+void trig_to_midi(const uint8_t trig, const uint8_t bitval, const uint8_t rand_thresh, const uint8_t midival, const uint8_t channel) {
   if (trig & bitval) {
-    sendDrum(midival,127);
-  }
-  else{
+    sendDrum(midival, 127);
+  } else {
     //MIDI.sendNoteOff(midival, 0, channel);
   }
 }
@@ -288,22 +281,27 @@ void loop() {
   int16_t total;
 
   uint8_t stepcnt = 0;
-  uint16_t tempo = 3500; //, pot_tempo=tempo;
-  uint16_t halftempo = tempo*0.5;
+  uint16_t tempo = 3500;  //, pot_tempo=tempo;
+  uint16_t halftempo = tempo * 0.5;
   uint16_t tempocnt = 1;
   //uint8_t MUX=4;
+
   uint8_t playing = 0;
   uint8_t finishnote = 0;
   uint8_t songfinished = 0;
+  uint8_t latched = 0;
+  uint8_t playswitch = 0;
+  uint8_t sw2latched = 0;
 
-  //indexes for song structs: 
+  //indexes for song structs:
   uint8_t stepidx = 0;
   uint8_t patidx = 0;
   uint8_t blockidx = 0;
   uint8_t songidx = 0;
 
+  //TODO: we won't need these: 
   uint8_t patselect = 0;
-  uint8_t patlength = 15;//pgm_read_byte_near(patlen + patselect);
+  uint8_t patlength = 15;  //pgm_read_byte_near(patlen + patselect);
 
   uint8_t bitshift1 = 0,
           bitshift2 = 0;
@@ -314,13 +312,15 @@ void loop() {
   //Pitch control:
   uint8_t divider, samplepitch1 = 129, samplepitch2 = 129;
   uint8_t phaccGU, phaccBG2, phaccBD, phaccCY,
-          phaccCL, phaccCW , phaccMA, phaccQU;
+    phaccCL, phaccCW, phaccMA, phaccQU;
+
+
   uint8_t MUX = 0;
   uint8_t pp;
 
-  uint8_t togglestartstop = 1; //change to zero if you don't want beat to start on boot
+  uint8_t togglestartstop = 1;  //change to zero if you don't want beat to start on boot
 
-  uint8_t clockdiv = 4; //number of
+  uint8_t clockdiv = 4;  //number of
   uint16_t gatediv = 16;
 
   unsigned long now, then;
@@ -335,10 +335,12 @@ void loop() {
   uint8_t lasttrig;
   uint8_t trig;
 
-  //set up the song structure pointers:	
-  songstruct * song = (songstruct *) testset.songs[songidx];
-	blockstruct * block = (blockstruct *) song->blocks[blockidx];
-  patstruct * patt = (patstruct *) block->patterns[patidx];
+  //set up the song structure pointers:
+  static const songstruct *song = testset.songs[songidx];
+  static const blockstruct *block = song->blocks[blockidx];
+  static const patstruct *patt = block->patterns[patidx];
+
+  tempo = song->tempo;
 
   while (1) {
 
@@ -350,95 +352,132 @@ void loop() {
       sei();
 
       //------------------------------------------------------------------------
+      //--------- control block ------------------------------------------------
+
+      //Reset stuff here based on whether playing or not
+      if (playing = playswitch) {
+        if(songfinished){
+          playing = 0;
+        }
+      }else{
+        if(sw2)
+          songidx++;
+      }
+      
+      if(songfinished){
+        stepcnt = 0;
+        beatCount = 0;
+
+        //todo(sjh): put this in a function! 
+        if (!latched) {
+          songidx++;
+          if (songidx == testset.setlen) {
+            songidx = 0;
+          }
+          latched = 1;
+      
+          stepidx = 0;
+          patidx = 0;
+          blockidx = 0;
+
+          song =  testset.songs[songidx];
+          block = song->blocks[blockidx];
+          patt =  block->patterns[patidx];
+
+          tempo = song->tempo;
+        }
+
+        digitalWriteFast(CLOCK_PIN, LOW);  //Clock out Lo
+      } 
+
+      //------------------------------------------------------------------------
       //--------- sequencer block ----------------------------------------------
       if (playing | finishnote) {
         if (!(tempocnt--)) {
           tempocnt = tempo;
 
           if ((beatCount & 0x02) == 0)
-            digitalWriteFast(CLOCK_PIN, HIGH); //Clock out Hi
+            digitalWriteFast(CLOCK_PIN, HIGH);  //Clock out Hi
           else
-            digitalWriteFast(CLOCK_PIN, LOW); //Clock out Lo
+            digitalWriteFast(CLOCK_PIN, LOW);  //Clock out Lo
           beatCount++;
 
-          //trig = pgm_read_byte_near(pattern + (patselect << 4) + stepcnt++);
-#ifdef USE_PROGMEM  
+#ifdef USE_PROGMEM
           trig = pgm_read_byte_near(patt->drumpattern[stepidx]);
 #else
           trig = patt->drumpattern[stepidx];
 #endif
-          
-          
-          PORTC = stepcnt; //Not sure what this does!
- 
+          PORTC = stepcnt;  //Not sure what this does!
+
           // Uncomment if you want to mask drums...
           //uint8_t mask=(PIND>>2)|((PINB&3)<<6);
           //trig&=mask;
 
           if (stepcnt > patlength) stepcnt = 0;
-          if (stepcnt == 0){
-            digitalWriteFast(12, HIGH); //Reset out Hi
-          }
-          else{ 
-            digitalWriteFast(12, LOW); //Reset out Lo
+          if (stepcnt == 0) {
+            digitalWriteFast(12, HIGH);  //Reset out Hi
+          } else {
+            digitalWriteFast(12, LOW);  //Reset out Lo
           }
 
           trig_to_midi(trig, 128, rand_thresh, GUMIDI, MIDIDRUMCHANNEL);
-          trig_to_midi(trig,  64, rand_thresh, BG2MIDI, MIDIDRUMCHANNEL);
-          trig_to_midi(trig,  32, rand_thresh, BDMIDI, MIDIDRUMCHANNEL);
-          trig_to_midi(trig,  16, rand_thresh, SDMIDI, MIDIDRUMCHANNEL);
-          trig_to_midi(trig,   8, rand_thresh, HHMIDI, MIDIDRUMCHANNEL);
-          trig_to_midi(trig,   4, rand_thresh, LTMIDI, MIDIDRUMCHANNEL);
-          trig_to_midi(trig,   2, rand_thresh, MAMIDI, MIDIDRUMCHANNEL);
-          trig_to_midi(trig,   1, rand_thresh, QUMIDI, MIDIDRUMCHANNEL);
+          trig_to_midi(trig, 64, rand_thresh, BG2MIDI, MIDIDRUMCHANNEL);
+          trig_to_midi(trig, 32, rand_thresh, BDMIDI, MIDIDRUMCHANNEL);
+          trig_to_midi(trig, 16, rand_thresh, SDMIDI, MIDIDRUMCHANNEL);
+          trig_to_midi(trig, 8, rand_thresh, HHMIDI, MIDIDRUMCHANNEL);
+          trig_to_midi(trig, 4, rand_thresh, LTMIDI, MIDIDRUMCHANNEL);
+          trig_to_midi(trig, 2, rand_thresh, MAMIDI, MIDIDRUMCHANNEL);
+          trig_to_midi(trig, 1, rand_thresh, QUMIDI, MIDIDRUMCHANNEL);
 
           //todo(sjh): make sure stepcnt is in sync with the above
-#ifdef USE_PROGMEM  
-          //trig = pgm_read_byte_near(midi_pattern + (patselect << 4) + stepcnt);
+#ifdef USE_PROGMEM
           trig = pgm_read_byte_near(patt->leadpattern[stepidx]);
 #else
           trig = patt->leadpattern[stepidx];
 #endif
-
-          if(trig>10)
+          if (trig > 10)
             MIDI.sendNoteOn(trig, 127, 1);
-            
-#ifdef USE_PROGMEM  
-          trig = pgm_read_byte_near(patt->basspattern[stepidx]);  
+#ifdef USE_PROGMEM
+          trig = pgm_read_byte_near(patt->basspattern[stepidx]);
 #else
-          trig = patt->basspattern[stepidx];  
+          trig = patt->basspattern[stepidx];
 #endif
-
-          if(trig > 10)
+          if (trig > 10)
             MIDI.sendNoteOn(trig, 127, 2);
 
-          if(++stepidx == patt->len){
-            stepidx=0;
-            if(++patidx == block->blocklen){
-                patidx=0;
-                if(++blockidx == song->songlen){
-                    blockidx=0;
-                    songfinished = true;
-                }
-                block = (blockstruct *) song->blocks[blockidx];
+
+          //update the pattern:
+          if (++stepidx == patt->len) {
+            stepidx = 0;
+            if (++patidx == block->blocklen) {
+              patidx = 0;
+              if (++blockidx == song->songlen) {
+                blockidx = 0;
+                songfinished = true;
+              }
+              block = song->blocks[blockidx];
             }
-            patt = (patstruct *) block->patterns[patidx];
-          }   
-          // tell the sequencer we have notes to finish!  
+            patt = block->patterns[patidx];
+          }
+
+          // tell the sequencer we have notes to finish!
           finishnote = 1;
         }
-        
-        if(tempocnt == halftempo){
+
+        if (tempocnt == halftempo) {
           //MIDI.sendNoteOn(trig, 0, 1);
-          //OR all notes offL 
-          MIDI.sendControlChange(123,0,1);
+          //OR all notes offL
+          MIDI.sendControlChange(123, 0, 1);
+          MIDI.sendControlChange(123, 0, 2);
           //MIDI.sendNoteOff(trig, 127, 1);
-          MIDI.sendNoteOff(trig, 127, 2);
+          //MIDI.sendNoteOff(trig, 127, 2);
           finishnote = 0;
         }
       }
+
     }
   
+
 
     //------------------------------------------------------------------------
     // Control pots & switches block -----------------------------------------
@@ -452,23 +491,23 @@ void loop() {
         //uint16_t pitch=((ADCL+(ADCH<<8))>>3)+1;
         /* knob / switch layout:
 
-            s1  s2  s3
-          k0  k1  k2
-            k3  k4  k5
-          k6  k7
-        */
+              s1  s2  s3
+            k0  k1  k2
+              k3  k4  k5
+            k6  k7
+          */
 
         switch (MUX) {
           case 0:
-            samplecutoff1 = ((ADCL + (ADCH << 8)) << 3);
+            //samplecutoff1 = ((ADCL + (ADCH << 8)) << 3);
             break;
           case 1:
-            samplepitch1 = sw2 ? ((ADCL + (ADCH << 8)) >> 3) + 1 : 128;
+            //samplepitch1 = sw2 ? ((ADCL + (ADCH << 8)) >> 3) + 1 : 128;
             break;
           case 2:
             //bitshift1 = sw3 ? (ADCL + (ADCH << 8)) >> 7 : 0; //TODO: interesting effects if bitshift and samplecutoff are on the same mux!
             //bitmask1 = 0xff << (bitshift1 == 7 ? 6 : bitshift1);
-            rand_thresh = sw3 ? (((ADCL + (ADCH << 8)) << 3)>>2) : B11111111;////(((ADCL + (ADCH << 8)) << 3)>>2) < rng_next() ? 1 : 0;
+            rand_thresh = sw3 ? (((ADCL + (ADCH << 8)) << 3) >> 2) : B11111111;  ////(((ADCL + (ADCH << 8)) << 3)>>2) < rng_next() ? 1 : 0;
             break;
           case 3:
             //samplecutoff2 = ((ADCL + (ADCH << 8)) << 3);
@@ -481,53 +520,24 @@ void loop() {
             //bitmask2 = 0xff << (bitshift2 == 7 ? 6 : bitshift2);
             break;
           case 6:
-            //songidx = 7; //TODO (sjh): tidy up the patselect variables... 
-            patselect = 15;//(ADCL + (ADCH << 8)) >> 6;
+            //songidx = 7; //TODO (sjh): tidy up the patselect variables...
+            patselect = 15;  //(ADCL + (ADCH << 8)) >> 6;
             //patlength = pgm_read_byte_near(patlen + patselect);
             break;
           case 7:
             //tempo = 100 + 3500;//((ADCL + (ADCH << 8)) << 2);
 
-            tempo = 100 + ((ADCL + (ADCH << 8)) << 2);
+            //This times when "NOTE OFF" is sent:
+            //halftempo = 100 + ((ADCL + (ADCH << 8)) << 2);
             break;
         }
 
         MUX++;
         if (MUX == MAXMUX) MUX = 0;
-        ADMUX = 64 | MUX; //Select MUX
-        sbi(ADCSRA, ADSC); //start next conversation1
+        ADMUX = 64 | MUX;   //Select MUX
+        sbi(ADCSRA, ADSC);  //start next conversation1
       }
 
-      //Try run and stop in here - within the divider to keep things quick - no obvious latency...
-      if (playing = digitalReadFast(RUNSTOP_PIN)) {
-        if(songfinished){
-          playing = 0;
-        }
-      }
-      else {
-        playing = 0;//change to zero if you want to turn beat on or off
-        stepcnt = 0;
-        beatCount = 0;
-
-        if(songfinished | sw2){
-          songidx++;
-          if(songidx == testset.setlen){
-            songidx = 0;
-          }
-        }
-
-        //restart the song
-        songfinished = 0;
-        stepidx = 0;
-        patidx = 0;
-        blockidx = 0;
-
-        song = (songstruct *) testset.songs[songidx];
-	      block = (blockstruct *) song->blocks[blockidx];
-        patt = (patstruct *) block->patterns[patidx];
-
-        digitalWriteFast(CLOCK_PIN, LOW); //Clock out Lo
-      }
 
       //TODO: if this works, put it in the MUX block to explicity disable reading from DAC - quicker that way and it means control can be opened up to MIDI!
       //Trying to use the other two switches to turn off the effects...
@@ -535,75 +545,37 @@ void loop() {
       sw2 = digitalReadFast(SW2_PIN);
       sw3 = digitalReadFast(SW3_PIN);
 
-#ifdef DOSERIAL
-      //------------------------------------------------------------------------
-      // Serial keyboard control block
-      if (Serial.available()) {
-        char c = Serial.read();
-        switch (c) {
-          case ('j'): /* next pattern */
-            ++patselect;
-            patselect &= 15;   /* only 16 patterns */
-            patlength = pgm_read_byte_near(patlen + patselect);
-            Serial.print("p "); Serial.println(patselect);
-            Serial.print("p<<4 "); Serial.println(patselect << 4);
-            break;
-          case ('k'): /* previous pattern */
-            --patselect;
-            patselect &= 15;   /* only 16 patterns */
-            patlength = pgm_read_byte_near(patlen + patselect);
-            Serial.print("p "); Serial.println(patselect);
-            Serial.print("p<<4 "); Serial.println(patselect << 4);
-            break;
-          case (' '):
-            //if (playing){
-            //	playing=0;
-            //} else {
-            //	playing=1;
-            //}
-            playing != playing;
-            break;
-          case ('f'):
-            if (tempo > 100) {
-              tempo -= 100;
+      if(!(playswitch = digitalReadFast(RUNSTOP_PIN))){
+        
+        songfinished = 0;
+        latched = 0;
+        /*
+        //if(sw2){
+        //  if(!sw2latched){
+            songidx++;
+            if (songidx == testset.setlen) {
+              songidx = 0;
             }
-            Serial.println(tempo);
-            //Serial.println(pot_tempo);
-            break;
-          case ('d'):
-            tempo += 100;
-            Serial.println(tempo);
-            //Serial.println(pot_tempo);
-            break;
-          //case('u'):
-          //        if(pitch>100){
-          //          pitch -= 100;
-          //       }
-          //        break;
-          //case('i'):
-          //        pitch += 100;
-          //        break;
-          case ('p'):
-            Serial.println("---------------");
-            Serial.println("Current Pattern");
-            Serial.print("Tempo: "); Serial.println(tempo);
-            Serial.print("Pot 0 val is "); Serial.println(samplepitch1);
-            Serial.print("Pot 4 val is "); Serial.println(samplepitch2);
-            Serial.print("Pattern is "); Serial.println(patselect);
-            Serial.print("Patlen is "); Serial.println(patlength);
-            for (pp = 0; pp < 16; pp++) {
-              print_binary(pgm_read_byte_near(pattern + (patselect << 4) + pp), 8);
-              Serial.println();
-            }
-            Serial.println("---------------");
-            Serial.println("---------------");
-            break;
-          default:
-            break;
-        }
+            //sw2latched = 1;
+        
+            stepidx = 0;
+            patidx = 0;
+            blockidx = 0;
 
+            song = (songstruct *)testset.songs[songidx];
+            block = (blockstruct *)song->blocks[blockidx];
+            patt = (patstruct *)block->patterns[patidx];
+
+            tempo = song->tempo;
+          
+          }
+          */
+        //}else{
+        //  sw2latched = 0;
+        //}
       }
-#endif
+
+
     }
   }
 }

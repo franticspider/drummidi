@@ -20,14 +20,13 @@ unsigned char x, y, z, a;
 	}
 */
 
-unsigned char x=0,y=0,z=0,a=1,t;
+unsigned char x = 0, y = 0, z = 0, a = 1, t;
 
-unsigned char rng_next(){
-	t = x ^ (x << 4);
-	x=y;
-	y=z;
-	z=a;
-	a = z ^ t ^ ( z >> 1) ^ (t << 1);
-	return a;
+unsigned char rng_next() {
+  t = x ^ (x << 4);
+  x = y;
+  y = z;
+  z = a;
+  a = z ^ t ^ (z >> 1) ^ (t << 1);
+  return a;
 }
-

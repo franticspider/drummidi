@@ -1,9 +1,5 @@
 
-#ifdef USE_PROGMEM
-static const patstruct id_song_1 PROGMEM = {
-#else
 static const patstruct id_song_1 = {
-#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {    
                           0b01100010,      //snarey repeat so we have a counter
@@ -18,11 +14,9 @@ static const patstruct id_song_1 = {
     .leadpattern = (const unsigned char[]) {C2, 0, 0, 0, 0, 0, 0, 0}
 };
 
-#ifdef USE_PROGMEM
-static const patstruct id_song_2 PROGMEM = {
-#else
+
+
 static const patstruct id_song_2 = {
-#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {    
                           0b01100010,      //snarey repeat so we have a counter
@@ -39,11 +33,7 @@ static const patstruct id_song_2 = {
 
 
 
-#ifdef USE_PROGMEM
-static const patstruct not_you_culture_1 PROGMEM = {
-#else
 static const patstruct not_you_culture_1 = {
-#endif
     .len = 32,
     .drumpattern = (const unsigned char[]) {   
         0b01000001,      //Reggae16
@@ -101,12 +91,7 @@ static const patstruct not_you_culture_1 = {
 
 
 
-
-#ifdef USE_PROGMEM
-static const patstruct id_song_3 PROGMEM = {
-#else
 static const patstruct id_song_3 = {
-#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {    
                           0b01100010,      //snarey repeat so we have a counter
@@ -122,11 +107,7 @@ static const patstruct id_song_3 = {
 };
 
 
-#ifdef USE_PROGMEM
-static const patstruct id_song_4 PROGMEM = {
-#else
 static const patstruct id_song_4 = {
-#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {    
                           0b01100010,      //snarey repeat so we have a counter
@@ -142,11 +123,7 @@ static const patstruct id_song_4 = {
 };
 
 
-#ifdef USE_PROGMEM
-static const patstruct id_song_5 PROGMEM = {
-#else
 static const patstruct id_song_5 = {
-#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {    
                           0b01100010,      //snarey repeat so we have a counter
@@ -163,11 +140,7 @@ static const patstruct id_song_5 = {
 
 
 
-#ifdef USE_PROGMEM
-static const patstruct testpat1 PROGMEM = {
-#else
 static const patstruct testpat1 = {
-#endif
     .len = 8,
     .drumpattern = (const unsigned char[]) {    
                           0b00101100,      //Hard rock16
@@ -183,11 +156,7 @@ static const patstruct testpat1 = {
 };
 
 
-#ifdef USE_PROGMEM
-const patstruct testpat2 PROGMEM = {
-#else
-const patstruct testpat2 = {
-#endif
+static const patstruct testpat2 = {
     .len = 8,
     .drumpattern = (const unsigned char[]) {
                           0b00101100,      //Hard rock16
@@ -203,11 +172,7 @@ const patstruct testpat2 = {
 };
 
 
-#ifdef USE_PROGMEM
-const patstruct testpat3 PROGMEM = {
-#else
-const patstruct testpat3 = {
-#endif
+static const patstruct testpat3 = {
     .len = 4,
     .drumpattern = (const unsigned char[]) {
                           0b00101100,      //Hard rock16
@@ -223,87 +188,95 @@ const patstruct testpat3 = {
 };
 
 
-const blockstruct block_id_1 = {
+static const blockstruct block_id_1 = {
     .blocklen = 1,
     .patterns = (const patstruct*[]){&id_song_1}
     };
 
 
-const blockstruct block_id_2 = {
-    .blocklen = 7,
-    .patterns = (const patstruct*[]){&id_song_2, &not_you_culture_1, 
+static const blockstruct block_id_2 = {
+    .blocklen = 6,
+    .patterns = (const patstruct*[]){
+        &not_you_culture_1, &not_you_culture_1, 
     		&not_you_culture_1, &not_you_culture_1,
-    		&not_you_culture_1, &not_you_culture_1,
-    		&not_you_culture_1}
+    		&not_you_culture_1, &not_you_culture_1
+    		}
     };
 
 
-const blockstruct block_id_3 = {
+static const songstruct song_not_u_culture = {
+    .songlen = 4,
+    .tempo = 4300,//4500 too slow
+    .blocks = (const blockstruct*[]){&block_id_2,&block_id_2,&block_id_2,&block_id_2}
+    };
+
+
+
+static const blockstruct block_id_3 = {
     .blocklen = 1,
     .patterns = (const patstruct*[]){&id_song_3}
     };
 
 
-const blockstruct block_id_4 = {
+static const blockstruct block_id_4 = {
     .blocklen = 1,
     .patterns = (const patstruct*[]){&id_song_4}
     };
 
 
-const blockstruct block_id_5 = {
+static const blockstruct block_id_5 = {
     .blocklen = 1,
     .patterns = (const patstruct*[]){&id_song_5}
     };
 
 
-const blockstruct testblock1 = {
+static const blockstruct testblock1 = {
     .blocklen = 4,
     .patterns = (const patstruct*[]){&testpat1, &testpat2, 
                                      &testpat1, &testpat2}
     };
 
 
-const blockstruct testblock2 = {
+static const blockstruct testblock2 = {
     .blocklen = 6,
     .patterns = (const patstruct*[]){&testpat3, &testpat3, &testpat3,         
                                      &testpat1, &testpat3, &testpat3}
     };
 
 
-const songstruct testsong1 = {
+static const songstruct testsong1 = {
     .songlen = 6,
+    .tempo = 2300,
     .blocks = (const blockstruct*[]){&block_id_1,&block_id_1,&testblock1, 
                                     &testblock2,
                                     &testblock1, &testblock2}
     };
 
 
-const songstruct song_not_u_culture = {
-    .songlen = 1,
-    .blocks = (const blockstruct*[]){&block_id_2}
-    };
 
-
-const songstruct testsong3 = {
+static const songstruct testsong3 = {
     .songlen = 1,
+    .tempo = 3500,
     .blocks = (const blockstruct*[]){&block_id_3}
     };
 
 
-const songstruct testsong4 = {
+static const songstruct testsong4 = {
     .songlen = 1,
+    .tempo = 3500,
     .blocks = (const blockstruct*[]){&block_id_4}
     };
 
 
-const songstruct testsong5 = {
+static const songstruct testsong5 = {
     .songlen = 1,
+    .tempo = 3500,
     .blocks = (const blockstruct*[]){&block_id_5}
     };
 
-const setstruct testset = {
+static const setstruct testset = {
     .setlen = 5,
-    .songs = (const songstruct*[]){ &testsong1, &song_not_u_culture,  &testsong3, &testsong5, &testsong4}
+    .songs = (const songstruct*[]){&song_TAG_IATT,  &song_TAG_KT,   &testsong1, &testsong4, &song_not_u_culture}
     }; 
 
 
