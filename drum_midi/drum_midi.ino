@@ -56,6 +56,7 @@
 #include "midi_patterns.h"
 #include "song_kids_today.h"
 #include "song_tortoise.h"
+#include "song_jako_thing.h"
 #include "midi_test_song.h"
 
 byte BDtoggle = 0, LTtoggle = 0;
@@ -108,6 +109,10 @@ ISR(TIMER1_COMPA_vect) {
 
 
 SoftwareSerial drumRxTx(RX2_PIN, TX2_PIN);
+
+//RIPPED FROM LOOP() - 
+static const songstruct *song = &song_TAG_JT; //testset.songs[songidx];
+uint8_t sw2 = 0, sw3 = 0;
 
 void setup() {
 
@@ -226,6 +231,25 @@ void setup() {
   drumRxTx.begin(31250);
 
 #endif
+
+//IN DESPERATION: USING RESET TO PICK SONG DEPENDING ON SW2 AND SW3...
+
+
+  sw2 = digitalReadFast(SW2_PIN);
+  sw3 = digitalReadFast(SW3_PIN);
+
+  if(!sw3){
+    if(!sw2)
+      song = &song_TAG_JT;
+    else
+      song = &song_TAG_IATT;
+  }else{
+    if(!sw2)
+      song = &song_TAG_KT;
+    else
+      song = &song_not_u_culture;
+  }
+
 }
 
 
@@ -326,7 +350,6 @@ void loop() {
   unsigned long now, then;
   uint8_t ledonoff = 0;
 
-  uint8_t sw2 = 0, sw3 = 0;
   uint8_t beatCount = 0;
   uint8_t rand_thresh;
 
@@ -336,7 +359,8 @@ void loop() {
   uint8_t trig;
 
   //set up the song structure pointers:
-  static const songstruct *song = testset.songs[songidx];
+  //MADE GLOBAL: 
+  //static const songstruct *song = &song_TAG_JT; //testset.songs[songidx];
   static const blockstruct *block = song->blocks[blockidx];
   static const patstruct *patt = block->patterns[patidx];
 
@@ -360,8 +384,8 @@ void loop() {
           playing = 0;
         }
       }else{
-        if(sw2)
-          songidx++;
+        //if(sw2)
+          //songidx++;
       }
       
       if(songfinished){
@@ -371,16 +395,42 @@ void loop() {
         //todo(sjh): put this in a function! 
         if (!latched) {
           songidx++;
-          if (songidx == testset.setlen) {
+          if (songidx >= testset.setlen) {
             songidx = 0;
           }
           latched = 1;
+
+          //song =  testset.songs[songidx];
+          //songs = (/*kanst*/ songstruct*[]){&song_TAG_JT, &song_TAG_IATT,  &song_TAG_KT, &song_not_u_culture,   &testsong1}
+          /*
+          switch(songidx){
+            case 0: 
+              song = &song_TAG_JT;
+              break;
+            case 1:
+              song = &song_TAG_IATT;
+               break;
+            case 2:  
+              song = &song_TAG_KT;
+              break;
+            case 3: 
+              song = &song_not_u_culture;
+              break;
+            case 4:   
+              song = &testsong1;
+              break;
+            default:
+              songidx=0;
+              song = &testsong4;
+              break;
+          }
+          */
+
       
           stepidx = 0;
           patidx = 0;
           blockidx = 0;
 
-          song =  testset.songs[songidx];
           block = song->blocks[blockidx];
           patt =  block->patterns[patidx];
 
@@ -507,7 +557,7 @@ void loop() {
           case 2:
             //bitshift1 = sw3 ? (ADCL + (ADCH << 8)) >> 7 : 0; //TODO: interesting effects if bitshift and samplecutoff are on the same mux!
             //bitmask1 = 0xff << (bitshift1 == 7 ? 6 : bitshift1);
-            rand_thresh = sw3 ? (((ADCL + (ADCH << 8)) << 3) >> 2) : B11111111;  ////(((ADCL + (ADCH << 8)) << 3)>>2) < rng_next() ? 1 : 0;
+            rand_thresh = B11111111;//sw3 ? (((ADCL + (ADCH << 8)) << 3) >> 2) : B11111111;  ////(((ADCL + (ADCH << 8)) << 3)>>2) < rng_next() ? 1 : 0;
             break;
           case 3:
             //samplecutoff2 = ((ADCL + (ADCH << 8)) << 3);

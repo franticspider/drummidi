@@ -6,18 +6,18 @@ First step is to make sure this works! We'll just use the O2 drum patterns as mi
 */
 typedef struct
 {
-  const unsigned char len;
-  const unsigned char PROGMEM *drumpattern;
-  const unsigned char PROGMEM *basspattern;
-  const unsigned char PROGMEM *leadpattern;
+  /*konst*/ unsigned char len;
+  /*konst*/ unsigned char PROGMEM *drumpattern;
+  /*konst*/ unsigned char PROGMEM *basspattern;
+  /*konst*/ unsigned char PROGMEM *leadpattern;
 }patstruct;
 #else
 typedef struct
 {
-  const unsigned char len;
-  const unsigned char *drumpattern;
-  const unsigned char *basspattern;
-  const unsigned char *leadpattern;
+  /*konst*/ unsigned char len;
+  const unsigned char drumpattern[];
+  /*konst*/ unsigned char basspattern[];
+  /*konst*/ unsigned char leadpattern[];
 }patstruct;
 #endif
 
@@ -25,19 +25,19 @@ typedef struct
 
 
 typedef struct {
-  const unsigned char blocklen;
-  const patstruct **patterns;
+  /*konst*/ unsigned char blocklen;
+  /*konst*/ patstruct **patterns;
 }blockstruct;
 
 
 typedef struct {
-  const unsigned char songlen;
-  const unsigned short tempo;
-  const blockstruct **blocks;
+  /*konst*/ unsigned char songlen;
+  /*konst*/ unsigned short tempo;
+  /*konst*/ blockstruct **blocks;
 }songstruct;
 
 
 typedef struct {
-  const unsigned char setlen;
-  const songstruct **songs;
+  /*konst*/ unsigned char setlen;
+  /*konst*/ songstruct **songs;
 }setstruct;

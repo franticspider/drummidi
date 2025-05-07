@@ -23,7 +23,7 @@
 
 static const patstruct pat_TAG_KT_1 = {
     .len = 16,
-    .drumpattern = (const unsigned char[]) {    
+    .drumpattern = /*(const unsigned char[])*/ {    
                         0b00000110, //9: Kids Today A
                         0b00100000,
                         0b00100100,
@@ -41,14 +41,14 @@ static const patstruct pat_TAG_KT_1 = {
                         0b00000110,
                         0b00100001
 			},
-    .basspattern = (const unsigned char[]) {0, 0, 0, 0,A2,G2,E2,E2,0, 0,E3, 0, 0,E2, 0, 0},
-    .leadpattern = (const unsigned char[]) {0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0}
+    .basspattern = /*(const unsigned char[])*/ {0, 0, 0, 0,A2,G2,E2,E2,0, 0,E3, 0, 0,E2, 0, 0},
+    .leadpattern = /*(const unsigned char[])*/ {0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 
 static const patstruct pat_TAG_KT_2 = {
     .len = 16,
-    .drumpattern = (const unsigned char[]) {    
+    .drumpattern = /*(const unsigned char[])*/ {    
                         0b00000110, //9: Kids Today A
                         0b00100000,
                         0b00100100,
@@ -66,8 +66,8 @@ static const patstruct pat_TAG_KT_2 = {
                         0b00000110,
                         0b00100001
 			},
-    .basspattern = (const unsigned char[]) {0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0},
-    .leadpattern = (const unsigned char[]) {0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0}
+    .basspattern = /*(const unsigned char[])*/ {0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0},
+    .leadpattern = /*(const unsigned char[])*/ {0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 static const blockstruct block_TAG_KT_1 = {
