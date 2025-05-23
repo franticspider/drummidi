@@ -173,7 +173,7 @@ const songstruct testsong5 = {
 */
 
 
-const songstruct *so_testset[] = {&song_TAG_JT, &song_TAG_IATT,  &song_TAG_KT, &song_TAG_NUC, &song_TAG_KW};
+const songstruct *so_testset[] = {&song_TAG_KW, &song_TAG_KT, &song_TAG_IATT, &song_TAG_JT, &song_TAG_NUC};
 const setstruct testset = {
     .setlen = 5,
     .songs = so_testset

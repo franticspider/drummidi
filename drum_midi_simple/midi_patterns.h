@@ -1,8 +1,9 @@
+
+#ifdef USE_PROGMEM
+
 /*
 First step is to make sure this works! We'll just use the O2 drum patterns as midi notes - make sure we can get a signal out...
 */
-
-#ifdef USE_PROGMEM
 typedef struct
 {
   /*konst*/ unsigned char len;
@@ -20,6 +21,9 @@ typedef struct
 }patstruct;
 #endif
 
+
+
+
 typedef struct {
   const unsigned char blocklen;
   const patstruct **patterns;
@@ -27,13 +31,13 @@ typedef struct {
 
 
 typedef struct {
-  const unsigned char songlen;
-  const unsigned short tempo;
-  const blockstruct **blocks;
+  /*konst*/ unsigned char songlen;
+  /*konst*/ unsigned short tempo;
+  /*konst*/ blockstruct **blocks;
 }songstruct;
 
 
 typedef struct {
-  const unsigned char setlen;
-  const songstruct **songs;
+  /*konst*/ unsigned char setlen;
+  /*konst*/ songstruct **songs;
 }setstruct;

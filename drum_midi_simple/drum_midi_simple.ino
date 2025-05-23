@@ -14,9 +14,7 @@
 #define POT4 A4
 #define POT5 A5
 
-
 #define MINIMUM(LEN, CUTOFF) ((LEN) < (CUTOFF) ? (LEN) : (CUTOFF))
-
 
 /* HARDWARE FAULT!
   Somehow the PCB has CLOCk_PIN going to pin 13.
@@ -36,10 +34,6 @@
 #define TX2_PIN (9)
 //#define VOLCA_MS (4)
 
-
-// Uncomment the following if you want serial (needs ~4% prog storage!)
-//#define DOSERIAL
-
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #endif
@@ -47,8 +41,19 @@
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #endif
 
+
+////////////////////////////DEBUGGING NOTE/////////////////
+
+/*
+Have to be careful - we need some of the midi defs to make 
+the structures, but we need to set baud rate for serial
+*/
+#define DEBUG_SERIAL
+
+
 ////////////////////////////MIDI BLOCK/////////////////////
 #define DOMIDI
+
 #ifdef DOMIDI
 
 #include <MIDI.h>
@@ -113,12 +118,38 @@ ISR(TIMER1_COMPA_vect) {
 SoftwareSerial drumRxTx(RX2_PIN, TX2_PIN);
 
 //RIPPED FROM LOOP() - 
-static const songstruct *song = &song_TAG_JT; //testset.songs[songidx];
-uint8_t sw2 = 0, sw3 = 0;
+static const songstruct *song = &song_TAG_KT; //testset.songs[songidx];
+uint8_t sw2 = 1, sw3 = 1;
 
+///////////////////////////////////////////////////////////////////////////////
+#ifdef DEBUG_SERIAL
+char buffer[150];
+void serialprintf(const char fmt, ...){
+  
+  sprintf(buffer,fmt,...);
+  Serial.println(buffer);
+}
+
+
+
+void print_song_pointers(const songstruct *sptr){
+
+  serialprintf("address of song is %p",sptr);
+
+}
+#endif
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
 void setup() {
 
-  OSCCAL = 0xFF;
+  //OSCCAL = 0xFF;
 
   //Drum mute inputs
   pinMode(SW2_PIN, INPUT_PULLUP);
@@ -147,6 +178,7 @@ void setup() {
   //pinMode(A7, INPUT); // pattern select pot
   pinMode(LED_BUILTIN, OUTPUT);  //on board LED for
 
+/*
   // Set up Timer 1 to send a sample every interrupt.
   cli();
   // Set CTC mode
@@ -205,6 +237,8 @@ void setup() {
   ADMUX = 64;
   sbi(ADCSRA, ADSC);
 
+  */
+
 #ifdef DOSERIAL
   Serial.begin(9600);
 
@@ -215,15 +249,15 @@ void setup() {
 #endif
 
 #ifdef DOMIDI
+#ifdef DEBUG_SERIAL
 
+  Serial.begin(9600);
 
-  // Connect the handleNoteOn function to the library,
-  // so it is called upon reception of a NoteOn.
-  //MIDI.setHandleNoteOn(handleNoteOn);  // Put only the name of the function
-  //MIDI.setHandleNoteOff(handleNoteOff);  // Put only the name of the function
-  //MIDI.setHandleControlChange(handleControlChange);
+  Serial.println("==================================================");
+  Serial.println("CHECKING ADDRESSES OF SONG STRUCTURES USING SERIAL");
+  Serial.println("==================================================");
 
-  //MIDI.sendNoteOn(DataByte inNoteNumber, DataByte inVelocity, Channel inChannel)
+#else
 
   MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to messages on channel 1
 
@@ -233,18 +267,19 @@ void setup() {
   drumRxTx.begin(31250);
 
 #endif
+#endif
 
 //IN DESPERATION: USING RESET TO PICK SONG DEPENDING ON SW2 AND SW3...
 
 
-  sw2 = digitalReadFast(SW2_PIN);
-  sw3 = digitalReadFast(SW3_PIN);
+//  sw2 = digitalRead(SW2_PIN);
+//  sw3 = digitalRead(SW3_PIN);
 
   if(!sw3){
     if(!sw2)
-      song = &song_TAG_JT;
+      song =  &song_TAG_IATT;
     else
-      song = &song_TAG_IATT;
+      song = &song_TAG_JT;
   }else{
     if(!sw2)
       song = &song_TAG_KT;
@@ -290,7 +325,7 @@ void sendDrum(unsigned char note, unsigned char velocity) {
 }
 
 
-void trig_to_midi(const uint8_t trig, const uint8_t bitval, const uint8_t rand_thresh, const uint8_t midival, const uint8_t channel) {
+void trig_to_midi(const uint8_t trig, const uint8_t bitval, const uint8_t midival, const uint8_t channel) {
   if (trig & bitval) {
     sendDrum(midival, 127);
   } else {
@@ -300,7 +335,73 @@ void trig_to_midi(const uint8_t trig, const uint8_t bitval, const uint8_t rand_t
 
 
 
+
+
+
+unsigned long time = 0;
+uint16_t current_tempo = 120; // we are using millis as our time
+uint8_t stepidx = 0;
+uint8_t patidx = 0;
+uint8_t blockidx = 0;
+uint8_t songidx = 1;
+
+uint8_t playing = 1;
+uint8_t songfinished = 0;
+
+const blockstruct *block = song->blocks[blockidx];
+const patstruct *patt = block->patterns[patidx];
+
 void loop() {
+
+  uint8_t trig;
+
+  uint16_t ctime = millis();
+  if (((ctime - time) >= current_tempo) & playing){
+    //reset the timer
+    time = ctime;
+
+    //trigger drums
+    trig = patt->drumpattern[stepidx];
+    trig_to_midi(trig, 128, GUMIDI,  MIDIDRUMCHANNEL);
+    trig_to_midi(trig, 64,  BG2MIDI, MIDIDRUMCHANNEL);
+    trig_to_midi(trig, 32,  BDMIDI,  MIDIDRUMCHANNEL);
+    trig_to_midi(trig, 16,  SDMIDI,  MIDIDRUMCHANNEL);
+    trig_to_midi(trig, 8,   HHMIDI,  MIDIDRUMCHANNEL);
+    trig_to_midi(trig, 4,   LTMIDI,  MIDIDRUMCHANNEL);
+    trig_to_midi(trig, 2,   MAMIDI,  MIDIDRUMCHANNEL);
+    trig_to_midi(trig, 1,   QUMIDI,  MIDIDRUMCHANNEL);
+
+    //trigger lead
+    trig = patt->leadpattern[stepidx];
+    if (trig > 10)
+      MIDI.sendNoteOn(trig, 127, 1);
+
+    //trigger bass
+
+
+
+    //move on
+    if (++stepidx >= patt->len) {
+      stepidx = 0;
+      if (++patidx >= block->blocklen) {
+        patidx = 0;
+        if (++blockidx >= song->songlen) {
+          blockidx = 0;
+          songfinished = true;
+          playing = false;
+        }
+        block = song->blocks[blockidx];
+      }
+      patt = block->patterns[patidx];
+    }
+  }
+}
+
+
+
+
+
+void oldloop() {
 
   uint16_t pitch;
 
@@ -447,7 +548,7 @@ void loop() {
       if (playing | finishnote) {
         if (!(tempocnt--)) {
           tempocnt = tempo;
-        
+
           if ((beatCount & 0x02) == 0)
             digitalWriteFast(CLOCK_PIN, HIGH);  //Clock out Hi
           else
@@ -457,8 +558,7 @@ void loop() {
 #ifdef USE_PROGMEM
           trig = pgm_read_byte_near(patt->drumpattern[stepidx]);
 #else
-          //trig = patt->drumpattern[stepidx];
-          trig = song->blocks[blockidx]->patterns[patidx]->drumpattern[stepidx];
+          trig = patt->drumpattern[stepidx];
 #endif
           PORTC = stepcnt;  //Not sure what this does!
 
@@ -473,6 +573,7 @@ void loop() {
             digitalWriteFast(12, LOW);  //Reset out Lo
           }
 
+          /*
           trig_to_midi(trig, 128, rand_thresh, GUMIDI, MIDIDRUMCHANNEL);
           trig_to_midi(trig, 64, rand_thresh, BG2MIDI, MIDIDRUMCHANNEL);
           trig_to_midi(trig, 32, rand_thresh, BDMIDI, MIDIDRUMCHANNEL);
@@ -481,21 +582,19 @@ void loop() {
           trig_to_midi(trig, 4, rand_thresh, LTMIDI, MIDIDRUMCHANNEL);
           trig_to_midi(trig, 2, rand_thresh, MAMIDI, MIDIDRUMCHANNEL);
           trig_to_midi(trig, 1, rand_thresh, QUMIDI, MIDIDRUMCHANNEL);
-
+          */
           //todo(sjh): make sure stepcnt is in sync with the above
 #ifdef USE_PROGMEM
           trig = pgm_read_byte_near(patt->leadpattern[stepidx]);
 #else
-          //trig = patt->leadpattern[stepidx];
-          trig = song->blocks[blockidx]->patterns[patidx]->leadpattern[stepidx];
+          trig = patt->leadpattern[stepidx];
 #endif
           if (trig > 10)
             MIDI.sendNoteOn(trig, 127, 1);
 #ifdef USE_PROGMEM
           trig = pgm_read_byte_near(patt->basspattern[stepidx]);
 #else
-          //trig = patt->basspattern[stepidx];
-          trig = song->blocks[blockidx]->patterns[patidx]->basspattern[stepidx];
+          trig = patt->basspattern[stepidx];
 #endif
           if (trig > 10)
             MIDI.sendNoteOn(trig, 127, 2);
@@ -511,12 +610,10 @@ void loop() {
                 songfinished = true;
                 playing = false;
               }
-              //block = song->blocks[blockidx];
+              block = song->blocks[blockidx];
             }
-            //patt = block->patterns[patidx];
+            patt = block->patterns[patidx];
           }
-
-          //patt = song->blocks[blockidx]->patterns[patidx]
 
           // tell the sequencer we have notes to finish!
           finishnote = 1;
