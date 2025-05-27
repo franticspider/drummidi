@@ -124,17 +124,22 @@ uint8_t sw2 = 1, sw3 = 1;
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DEBUG_SERIAL
 char buffer[150];
-void serialprintf(const char fmt, ...){
-  
-  sprintf(buffer,fmt,...);
-  Serial.println(buffer);
-}
+//void serialprintf(const char fmt, ...){
+//
+//  sprintf(buffer,fmt,...);
+//  Serial.println(buffer);
+//}
 
 
 
 void print_song_pointers(const songstruct *sptr){
+  sprintf(fmt,""address of song is %p",sptr);
+  Serial.println(buffer);
 
-  serialprintf("address of song is %p",sptr);
+
+
+
+  
 
 }
 #endif
