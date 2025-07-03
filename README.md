@@ -1,4 +1,4 @@
-
+*see `docs/guide.md` for user guide!* 
 
 
 # First jobs
