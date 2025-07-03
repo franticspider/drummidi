@@ -17,7 +17,7 @@ The goals in designing the PCB were:
 - 1 arduino nano - this can either be soldered in directly, or via two 15-pin headers
 - 2 jack sockets (supplied)
 - 3 switches (supplied)
-- 8 linear potentiometers
+- 8 10k linear potentiometers
 - 9 100nf capacitors
 - 1 1k ohm resistor
 
